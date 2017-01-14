@@ -18,12 +18,14 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Diagnostics;
 
-// Extended WPF Toolkit™ Community Edition
-// http://wpftoolkit.codeplex.com/
+// Extended WPF Toolkit™ Community Edition - http://wpftoolkit.codeplex.com/
+using Xceed.Wpf.Toolkit.PropertyGrid;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 using Autodesk.Forge;
 using Autodesk.Forge.Model;
 using Autodesk.Forge.Client;
+using System.Runtime.CompilerServices;
 
 namespace Autodesk.Forge.WpfCsharp {
 
@@ -32,13 +34,34 @@ namespace Autodesk.Forge.WpfCsharp {
 		Idle
 	}
 
-	public class ForgeObjectInfo {
+	public class ForgeObjectInfo : INotifyPropertyChanged {
 		public string Name { get; set; }
 		public string Size { get; set; }
 		public string Image { get; set; }
-		public dynamic Properties { get; set; }
+		public dynamic Properties { get; set; } =null ;
+		//public StateEnum PropertiesRequested { get; set; } =StateEnum.Idle ;
+		private StateEnum _PropertiesRequested =StateEnum.Idle ;
+		public StateEnum PropertiesRequested { get { return (_PropertiesRequested) ; } set { SetField (ref _PropertiesRequested, value) ; } } 
 		public dynamic Manifest { get; set; }
-		public bool TranslationRequested { get; set; }
+		//public StateEnum ManifestRequested { get; set; } =StateEnum.Idle ;
+		private StateEnum _ManifestRequested =StateEnum.Idle ;
+		public StateEnum ManifestRequested { get { return (_ManifestRequested) ; } set { SetField (ref _ManifestRequested, value) ; } } 
+		//public StateEnum TranslationRequested { get; set; } =StateEnum.Idle ;
+		private StateEnum _TranslationRequested =StateEnum.Idle ;
+		public StateEnum TranslationRequested { get { return (_TranslationRequested) ; } set { SetField (ref _TranslationRequested, value) ; } } 
+
+		public event PropertyChangedEventHandler PropertyChanged ;
+		private void OnPropertyChanged ([CallerMemberName] string propertyName =null) {
+			// C# 6 null-safe operator
+			PropertyChanged?.Invoke (this, new PropertyChangedEventArgs (propertyName)) ;
+		}
+		// C# 5 - CallMemberName means we don't need to pass the property's name
+		protected void SetField<T> (ref T field, T value, [CallerMemberName] string propertyName =null) {
+			if ( EqualityComparer<T>.Default.Equals (field, value) )
+				return ;
+			field =value ;
+			OnPropertyChanged (propertyName) ;
+		}
 	}
 	
 	/// <summary>
@@ -84,28 +107,19 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		#region State Property
 		private StateEnum _State =StateEnum.Idle ;
-
-		public StateEnum State {
-			get {
-				return (_State) ;
-			}
-			set {
-				var oldValue =State ;
-				_State =value ;
-				if ( oldValue != value ) {
-					OnStateChanged (oldValue, value) ;
-					OnPropertyChanged ("State") ;
-				}
-			}
-		}
+		public StateEnum State { get { return (_State) ; } set { SetField (ref _State, value) ; } }
 
 		public event PropertyChangedEventHandler PropertyChanged ;
-		private void OnPropertyChanged (string name) {
-			if ( PropertyChanged != null )
-				PropertyChanged (this, new PropertyChangedEventArgs (name)) ;
+		private void OnPropertyChanged ([CallerMemberName] string propertyName =null) {
+			// C# 6 null-safe operator
+			PropertyChanged?.Invoke (this, new PropertyChangedEventArgs (propertyName)) ;
 		}
-
-		protected virtual void OnStateChanged (StateEnum oldValue, StateEnum newValue) {
+		// C# 5 - CallMemberName means we don't need to pass the property's name
+		protected void SetField<T> (ref T field, T value, [CallerMemberName] string propertyName =null) {
+			if ( EqualityComparer<T>.Default.Equals (field, value) )
+				return ;
+			field =value ;
+			OnPropertyChanged (propertyName) ;
 		}
 
 		#endregion
@@ -368,7 +382,7 @@ namespace Autodesk.Forge.WpfCsharp {
 				md.Configuration.AccessToken =accessToken ;
 				ApiResponse<dynamic> response =await md.TranslateAsyncWithHttpInfo (job, bForce) ;
 				httpErrorHandler (response, "Failed to register file for translation") ;
-				item.TranslationRequested =true ;
+				item.TranslationRequested =StateEnum.Busy ;
 				item.Manifest =response.Data ;
 
 				JobProgress jobWnd =new JobProgress (item, accessToken) ;
@@ -376,7 +390,7 @@ namespace Autodesk.Forge.WpfCsharp {
 				jobWnd.Owner =this ;
 				jobWnd.Show () ;
 			} catch ( Exception /*ex*/ ) {
-				item.TranslationRequested =false ;
+				item.TranslationRequested =StateEnum.Idle ;
 				return (false) ;
 			}
 			return (true) ;
@@ -386,8 +400,28 @@ namespace Autodesk.Forge.WpfCsharp {
 			ForgeObjects.Items.Refresh () ;
 		}
 
-		private void Item_Properties (object sender, RoutedEventArgs e) {
+		private async void Item_Properties (object sender, RoutedEventArgs e) {
 			Handled (e) ;
+			if ( ForgeObjects.SelectedItems.Count == 0 )
+				return ;
+			await Task.WhenAll (
+				ForgeObjects.SelectedItems.Cast<ForgeObjectInfo> ().Select (item =>
+					RequestProperties (item))
+			) ;
+		}
+
+		private async Task RequestProperties (ForgeObjectInfo item) {
+			try {
+				item.PropertiesRequested =StateEnum.Busy ;
+				ObjectsApi ossObjects =new ObjectsApi () ;
+				ossObjects.Configuration.AccessToken =accessToken ;
+				ApiResponse<dynamic> response =await ossObjects.GetObjectDetailsAsyncWithHttpInfo (_bucket, item.Name) ;
+				httpErrorHandler (response, "Failed to get object details") ;
+				item.Properties =response.Data ;
+			} catch ( Exception /*ex*/ ) {
+			} finally {
+				item.PropertiesRequested =StateEnum.Idle ;
+			}
 		}
 
 		private void Item_Download (object sender, RoutedEventArgs e) {
@@ -434,7 +468,7 @@ namespace Autodesk.Forge.WpfCsharp {
 				ApiResponse<dynamic> response =await md.DeleteManifestAsyncWithHttpInfo (urn) ;
 				httpErrorHandler (response, "Failed to delete manifest") ;
 				item.Manifest =null ;
-				item.TranslationRequested =false ;
+				item.TranslationRequested =StateEnum.Idle ;
 			} catch ( Exception /*ex*/ ) {
 				return (false) ;
 			}
@@ -446,8 +480,13 @@ namespace Autodesk.Forge.WpfCsharp {
 			System.Diagnostics.Process.Start (new System.Diagnostics.ProcessStartInfo (e.Uri.AbsoluteUri)) ;
 		}
 
-		private /*async*/ void ForgeScenes_SelectionChanged (object sender, SelectionChangedEventArgs e) {
+		private /*async*/ void ForgeObjects_SelectionChanged (object sender, SelectionChangedEventArgs e) {
 			Handled (e) ;
+			propertyGrid.SelectedObject =null ;
+			if ( ForgeObjects.SelectedItems.Count != 1 )
+				return ;
+			ForgeObjectInfo item =ForgeObjects.SelectedItem as ForgeObjectInfo ;
+			propertyGrid.SelectedObject =item.Properties ;
 		}
 
 		#endregion

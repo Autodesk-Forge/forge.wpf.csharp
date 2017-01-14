@@ -17,16 +17,44 @@
 
 		<DataTemplate x:Key="centralTile">
 			<StackPanel Height="100" Width="100" ToolTip="{Binding Name}" Margin="2">
-				<Grid Width="95" Height="70" HorizontalAlignment="Center">
+				<Grid Width="95" Height="104" HorizontalAlignment="Center">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="16" />
 						<ColumnDefinition Width="*" />
 					</Grid.ColumnDefinitions>
-					<CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListViewItem}}" />
-					<Image Grid.Column="1" Source="{Binding Image, Converter={StaticResource ImageSourceConverter}}" Margin="6,6,6,9" />
+					<Grid.RowDefinitions>
+						<RowDefinition Height="70" />
+						<RowDefinition Height="*" />
+						<RowDefinition Height="*" />
+					</Grid.RowDefinitions>
+					<CheckBox Grid.Column="0" Grid.Row="0" IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListViewItem}}" />
+					<Image Grid.Column="1" Grid.Row="0" Source="{Binding Image, Converter={StaticResource ImageSourceConverter}}" Margin="6,6,6,9" />
+					<TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Text="{Binding Name}" HorizontalAlignment="Center" Margin="0,0,0,1" />
+					<TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Text="{Binding Size}" HorizontalAlignment="Center" Margin="0,0,0,1" />
+
+					<l:RestCallIndicator Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+									 Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="3">
+						<l:RestCallIndicator.Style>
+							<Style TargetType="{x:Type l:RestCallIndicator}">
+								<Setter Property="Visibility" Value="Hidden" />
+								<Style.Triggers>
+									<MultiDataTrigger>
+										<MultiDataTrigger.Conditions>
+											<Condition Binding="{Binding PropertiesRequested}" Value="Busy" />
+										</MultiDataTrigger.Conditions>
+										<Setter Property="Visibility" Value="Visible" />
+									</MultiDataTrigger>
+									<MultiDataTrigger>
+										<MultiDataTrigger.Conditions>
+											<Condition Binding="{Binding ManifestRequested}" Value="Busy" />
+										</MultiDataTrigger.Conditions>
+										<Setter Property="Visibility" Value="Visible" />
+									</MultiDataTrigger>
+								</Style.Triggers>
+							</Style>
+						</l:RestCallIndicator.Style>
+					</l:RestCallIndicator>
 				</Grid>
-				<TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Margin="0,0,0,1" />
-				<TextBlock Text="{Binding Size}" HorizontalAlignment="Center" Margin="0,0,0,1" />
 			</StackPanel>
 		</DataTemplate>
 
@@ -68,7 +96,7 @@
 
 			<ListView x:Name="ForgeObjects" Grid.Column="1" Grid.Row="1"
 				Width="Auto" Height="Auto" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-				SelectionChanged="ForgeScenes_SelectionChanged" Drop="ForgeScenes_Drop" AllowDrop="True">
+				SelectionChanged="ForgeObjects_SelectionChanged" Drop="ForgeScenes_Drop" AllowDrop="True">
 				<ListView.ContextMenu>
 					<ContextMenu>
 						<MenuItem Header="Refresh" Click="Item_Refresh">

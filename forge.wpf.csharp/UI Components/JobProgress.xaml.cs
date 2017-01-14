@@ -57,7 +57,7 @@ namespace Autodesk.Forge.WpfCsharp {
 					}
 					progress.Report (info) ;
 					if ( info.pct >= 100 || info.msg == "success" ) {
-						item.TranslationRequested =false ;
+						item.TranslationRequested =StateEnum.Busy ;
 						if ( _callback != null )
 							this.Dispatcher.Invoke (_callback, new Object [] { item }) ;
 						break ;

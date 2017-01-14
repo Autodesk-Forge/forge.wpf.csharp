@@ -121,6 +121,7 @@
     <Compile Include="UI Components\UploadProgress.xaml.cs">
       <DependentUpon>UploadProgress.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\MultipleBusy.cs" />
     <Compile Include="Utils\PropertyChangedHelper.cs" />
     <Compile Include="Utils\WaitCursor.cs" />
     <Page Include="UI Components\JobProgress.xaml">
