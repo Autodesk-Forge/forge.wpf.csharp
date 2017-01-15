@@ -4,6 +4,7 @@
              xmlns:l="clr-namespace:Autodesk.Forge.WpfCsharp"
 			 Startup="App_Startup"
              StartupUri="MainWindow.xaml"
+			 ShutdownMode="OnExplicitShutdown"
 >
     <Application.Resources>
 

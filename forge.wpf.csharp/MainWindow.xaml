@@ -11,6 +11,7 @@
 		Width="960" Height="655"
 		Icon="Images/Adsk.ico"
 		Loaded="Window_Loaded"
+		Closed="Window_Closed"
 		x:Name="mainWnd"
 >
 	<Window.Resources>
@@ -118,6 +119,22 @@
 						<MenuItem Header="Download object(s)" Click="Item_Download">
 							<MenuItem.Icon>
 								<Image Source="/Images/Download.png" Width="16" Height="16" />
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Header="Download object(s) no UI" Click="Item_DownloadNoUI">
+							<MenuItem.Icon>
+								<Image Source="/Images/Download.png" Width="16" Height="16" />
+							</MenuItem.Icon>
+						</MenuItem>
+						<Separator />
+						<MenuItem Header="View in browser" Click="Launch_Viewer">
+							<MenuItem.Icon>
+								<Image Source="/Images/3dviewer.png" Width="16" Height="16" />
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Header="View" Click="Launch_ViewerEmbedded">
+							<MenuItem.Icon>
+								<Image Source="/Images/3dviewer.png" Width="16" Height="16" />
 							</MenuItem.Icon>
 						</MenuItem>
 						<Separator />

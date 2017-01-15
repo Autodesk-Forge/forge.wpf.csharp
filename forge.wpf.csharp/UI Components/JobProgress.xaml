@@ -13,7 +13,7 @@
 >
 
 	<Grid>
-		<Label x:Name="sceneid" Content="Label" HorizontalAlignment="Stretch" Margin="10,10,10,0" VerticalAlignment="Top" RenderTransformOrigin="-1.346,-0.308" Width="Auto" Height="19" />
+		<Label x:Name="label" Content="Label" HorizontalAlignment="Stretch" Margin="10,10,10,0" VerticalAlignment="Top" RenderTransformOrigin="-1.346,-0.308" Width="Auto" Height="19" />
 		<ProgressBar x:Name="progressBar" Height="19" Margin="10,34,10,0" VerticalAlignment="Top" />
 		<Label x:Name="progressMsg" Content="Label" HorizontalAlignment="Stretch" Margin="10,58,10,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" RenderTransformOrigin="0.846,-1.077" Width="Auto" Height="19" />
 		<Button x:Name="stopButton" Content="Stop" HorizontalAlignment="Center" Margin="0,0,0,10" VerticalAlignment="Bottom" RenderTransformOrigin="-0.693,0.52" Width="75" Click="Button_Click" />

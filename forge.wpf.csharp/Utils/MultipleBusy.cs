@@ -11,7 +11,7 @@ namespace Autodesk.Forge.WpfCsharp {
 	// http://www.codearsenal.net/2013/12/wpf-multibinding-example.html#.WHn-dbYrKEI
 	// http://stackoverflow.com/questions/905932/how-can-i-provide-multiple-conditions-for-data-trigger-in-wpf
 
-	class MultipleBusy : IMultiValueConverter {
+	public class MultipleBusy : IMultiValueConverter {
 
 		public object Convert (object [] values, Type targetType, object parameter, CultureInfo culture) {
 			StateEnum result =StateEnum.Idle ;

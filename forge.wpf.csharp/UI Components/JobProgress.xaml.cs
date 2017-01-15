@@ -68,33 +68,36 @@ namespace Autodesk.Forge.WpfCsharp {
 		}
 
 		protected async Task<ProgressInfo> JobProgressRequest (ForgeObjectInfo item) {
-			DerivativesApi md =new DerivativesApi () ;
-			md.Configuration.AccessToken =_accessToken ;
-			string urn =MainWindow.URN (item.Properties.bucketKey, item) ;
-			ApiResponse<dynamic> response =await md.GetManifestAsyncWithHttpInfo (urn) ;
-			if ( MainWindow.httpErrorHandler (response, "Failed to get manifest") )
-				return (new ProgressInfo (0, "Initializing...")) ;
-			item.Manifest =response.Data ;
-			int pct =100 ;
-			if ( response.Data.progress != "complete" ) {
-				try {
-					string st =response.Data.progress ;
-					Regex rgx =new Regex ("[^0-9]*") ;
-					st =rgx.Replace (st, "") ;
-					pct =int.Parse (st) ;
-				} catch ( Exception ) {
-					pct =0 ;
+			try {
+				DerivativesApi md =new DerivativesApi () ;
+				md.Configuration.AccessToken =_accessToken ;
+				string urn =MainWindow.URN (item.Properties.bucketKey, item) ;
+				ApiResponse<dynamic> response =await md.GetManifestAsyncWithHttpInfo (urn) ;
+				MainWindow.httpErrorHandler (response, "Initializing...") ;
+				item.Manifest =response.Data ;
+				int pct =100 ;
+				if ( response.Data.progress != "complete" ) {
+					try {
+						string st =response.Data.progress ;
+						Regex rgx =new Regex ("[^0-9]*") ;
+						st =rgx.Replace (st, "") ;
+						pct =int.Parse (st) ;
+					} catch ( Exception ) {
+						pct =0 ;
+					}
 				}
+				string msg =response.Data.status ;
+				return (new ProgressInfo (pct, msg)) ;
+			} catch ( Exception /*ex*/ ) {
+				return (new ProgressInfo (0, "Initializing...")) ;
 			}
-			string msg =response.Data.status ;
-			return (new ProgressInfo (pct, msg)) ;
 		}
 
 		#endregion
 
 		#region Window events
 		private async void Window_Loaded (object sender, RoutedEventArgs e) {
-			sceneid.Content =_item.Name ;
+			label.Content =_item.Name ;
 			TaskScheduler uiScheduler =TaskScheduler.FromCurrentSynchronizationContext () ;
 			var progressIndicator =new Progress<ProgressInfo> (ReportProgress) ;
 			_cts =new CancellationTokenSource () ;

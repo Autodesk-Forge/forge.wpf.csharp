@@ -22,6 +22,8 @@ using System.Diagnostics;
 using Xceed.Wpf.Toolkit.PropertyGrid;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
+using Microsoft.WindowsAPICodePack.Dialogs;
+
 using Autodesk.Forge;
 using Autodesk.Forge.Model;
 using Autodesk.Forge.Client;
@@ -38,18 +40,21 @@ namespace Autodesk.Forge.WpfCsharp {
 		public string Name { get; set; }
 		public string Size { get; set; }
 		public string Image { get; set; }
-		public dynamic Properties { get; set; } =null ;
+		public dynamic _Properties =null ; // public dynamic Properties { get; set; } =null ;
+		public dynamic Properties { get { return (_Properties) ; } set { SetField (ref _Properties, value) ; } } 
 		//public StateEnum PropertiesRequested { get; set; } =StateEnum.Idle ;
 		private StateEnum _PropertiesRequested =StateEnum.Idle ;
 		public StateEnum PropertiesRequested { get { return (_PropertiesRequested) ; } set { SetField (ref _PropertiesRequested, value) ; } } 
-		public dynamic Manifest { get; set; }
+		private dynamic _Manifest =null ; // public dynamic Manifest { get; set; } =null ;
+		public dynamic Manifest { get { return (_Manifest) ; } set { SetField (ref _Manifest, value) ; } } 
 		//public StateEnum ManifestRequested { get; set; } =StateEnum.Idle ;
 		private StateEnum _ManifestRequested =StateEnum.Idle ;
 		public StateEnum ManifestRequested { get { return (_ManifestRequested) ; } set { SetField (ref _ManifestRequested, value) ; } } 
 		//public StateEnum TranslationRequested { get; set; } =StateEnum.Idle ;
 		private StateEnum _TranslationRequested =StateEnum.Idle ;
-		public StateEnum TranslationRequested { get { return (_TranslationRequested) ; } set { SetField (ref _TranslationRequested, value) ; } } 
+		public StateEnum TranslationRequested { get { return (_TranslationRequested) ; } set { SetField (ref _TranslationRequested, value) ; } }
 
+		#region INotifyPropertyChanged
 		public event PropertyChangedEventHandler PropertyChanged ;
 		private void OnPropertyChanged ([CallerMemberName] string propertyName =null) {
 			// C# 6 null-safe operator
@@ -62,8 +67,11 @@ namespace Autodesk.Forge.WpfCsharp {
 			field =value ;
 			OnPropertyChanged (propertyName) ;
 		}
+		
+		#endregion
+
 	}
-	
+
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
@@ -132,8 +140,7 @@ namespace Autodesk.Forge.WpfCsharp {
 		private async Task<ApiResponse<dynamic>> oauthExecAsync () {
 			try {
 				ApiResponse<dynamic> bearer =await _twoLeggedApi.AuthenticateAsyncWithHttpInfo (FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, _grantType, _scope) ;
-				if ( httpErrorHandler (bearer, "Failed to get your token") )
-					return (null) ;
+				httpErrorHandler (bearer, "Failed to get your token") ;
 				_2legged_bearer =bearer.Data ;
 				return (bearer) ;
 			} catch ( Exception ex ) {
@@ -182,12 +189,18 @@ namespace Autodesk.Forge.WpfCsharp {
 			LoginMenu_Click (null, null) ;
 		}
 
+		private void Window_Closed (object sender, EventArgs e) {
+			//Handled (e) ;
+			Application.Current.Shutdown () ;
+		}
+
 		#region UI Commands
 		private async void LoginMenu_Click (object sender, RoutedEventArgs e) {
 			Handled (e) ;
 			try {
 				State =StateEnum.Busy ;
 				ForgeMenu.IsEnabled =false ;
+				ForgeRegion.IsEnabled =false ;
 				
 				if ( _2legged_bearer == null )
 					await oauthExecAsync () ;
@@ -207,8 +220,10 @@ namespace Autodesk.Forge.WpfCsharp {
 				) ;
 				connectedTimeLabel.Content ="" ;
 				DateTime dt =DateTime.Now ;
-				if ( _2legged_bearer == null )
+				if ( _2legged_bearer == null ) {
+					ForgeRegion.IsEnabled =true ;
 					return ;
+				}
 				dt =dt.AddSeconds ((double)_2legged_bearer.expires_in) ;
 				connectedTimeLabel.Content =(_2legged_bearer == null ?
 					  ""
@@ -230,10 +245,9 @@ namespace Autodesk.Forge.WpfCsharp {
 				ossBuckets.Configuration.AccessToken =accessToken ;
 				PostBucketsPayload payload =new PostBucketsPayload (_bucket, null, _bucketType) ;
 				ApiResponse<dynamic> response =await ossBuckets.CreateBucketAsyncWithHttpInfo (payload, (string)ForgeRegion.SelectedItem) ;
-				if ( httpErrorHandler (response, "Failed to create bucket") )
-					return ;
+				httpErrorHandler (response, "Failed to create bucket") ;
 			} catch ( ApiException apiex ) {
-				if ( apiex.ErrorCode != 409 )
+				if ( apiex.ErrorCode != 409 ) // Already exists - we're good
 					MessageBox.Show ("Exception when calling BucketsApi.CreateBucketAsyncWithHttpInfo: " + apiex.Message, APP_NAME, MessageBoxButton.OK, MessageBoxImage.Error) ;
 			} catch ( Exception ex ) {
 				MessageBox.Show ("Exception when calling BucketsApi.CreateBucketAsyncWithHttpInfo: " + ex.Message, APP_NAME, MessageBoxButton.OK, MessageBoxImage.Error) ;
@@ -263,11 +277,10 @@ namespace Autodesk.Forge.WpfCsharp {
 				ApiResponse<dynamic> response =await ossObjects.GetObjectsAsyncWithHttpInfo (
 					_bucket, limit, null, startAt
 				) ;
-				if ( httpErrorHandler (response, "Failed to access buckets list") )
-					return (null) ;
-
+				httpErrorHandler (response, "Failed to access buckets list") ;
 				ObservableCollection<ForgeObjectInfo> items =ItemsSource ;
 				foreach ( KeyValuePair<string, dynamic> objInfo in new DynamicDictionaryItems (response.Data.items) ) {
+					objInfo.Value.region =(string)ForgeRegion.SelectedItem ;
 					items.Add (new ForgeObjectInfo () {
 						Name =objInfo.Value.objectKey,
 						Size =SizeSuffix (objInfo.Value.size),
@@ -318,10 +331,8 @@ namespace Autodesk.Forge.WpfCsharp {
 						fileKey, (int)streamReader.BaseStream.Length, streamReader.BaseStream,
 						"application/octet-stream"
 					) ;
-					if ( httpErrorHandler (response, "Failed to upload file") ) {
-						wnd.ReportProgress (new ProgressInfo (0, "Failed to upload file")) ;
-						return (false) ;
-					}
+					httpErrorHandler (response, "Failed to upload file") ;
+					response.Data.region =(string)ForgeRegion.SelectedItem ;
 					items.Add (new ForgeObjectInfo () {
 						Name =fileKey,
 						Size =SizeSuffix (new System.IO.FileInfo (filename).Length),
@@ -338,8 +349,16 @@ namespace Autodesk.Forge.WpfCsharp {
 			return (true) ;
 		}
 
-		private void Item_Refresh (object sender, RoutedEventArgs e) {
+		private async void Item_Refresh (object sender, RoutedEventArgs e) {
 			Handled (e) ;
+			int i =0 ;
+			Task[] tasks =new Task [2 * ForgeObjects.SelectedItems.Count] ;
+			foreach ( ForgeObjectInfo item  in ForgeObjects.SelectedItems ) {
+				tasks [i++] =RequestProperties (item) ;
+				tasks [i++] =RequestManifest (item) ;
+			}
+			//Task.WaitAll (tasks) ;
+			await Task.WhenAll (tasks) ;
 		}
 
 		private async void Item_Translate (object sender, RoutedEventArgs e) {
@@ -402,8 +421,6 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		private async void Item_Properties (object sender, RoutedEventArgs e) {
 			Handled (e) ;
-			if ( ForgeObjects.SelectedItems.Count == 0 )
-				return ;
 			await Task.WhenAll (
 				ForgeObjects.SelectedItems.Cast<ForgeObjectInfo> ().Select (item =>
 					RequestProperties (item))
@@ -417,15 +434,118 @@ namespace Autodesk.Forge.WpfCsharp {
 				ossObjects.Configuration.AccessToken =accessToken ;
 				ApiResponse<dynamic> response =await ossObjects.GetObjectDetailsAsyncWithHttpInfo (_bucket, item.Name) ;
 				httpErrorHandler (response, "Failed to get object details") ;
+				response.Data.region =(string)ForgeRegion.SelectedItem ;
 				item.Properties =response.Data ;
 			} catch ( Exception /*ex*/ ) {
+				item.Properties =null ;
 			} finally {
 				item.PropertiesRequested =StateEnum.Idle ;
 			}
 		}
 
-		private void Item_Download (object sender, RoutedEventArgs e) {
+		private async Task RequestManifest (ForgeObjectInfo item) {
+			try {
+				item.ManifestRequested =StateEnum.Busy ;
+				DerivativesApi md =new DerivativesApi () ;
+				md.Configuration.AccessToken =accessToken ;
+				string urn =URN (_bucket, item) ;
+				ApiResponse<dynamic> response =await md.GetManifestAsyncWithHttpInfo (urn) ;
+				httpErrorHandler (response, "Failed to get manifest") ;
+				item.Manifest =response.Data ;
+			} catch ( Exception /*ex*/ ) {
+				item.Manifest =null ;
+			} finally {
+				item.ManifestRequested =StateEnum.Idle ;
+			}
+		}
+
+		private async void Item_Download (object sender, RoutedEventArgs e) {
 			Handled (e) ;
+			// http://stackoverflow.com/questions/4007882/select-folder-dialog-wpf/17712949#17712949
+			CommonOpenFileDialog dlg =new CommonOpenFileDialog () ;
+			dlg.Title ="Select Folder where to save your files";
+			dlg.IsFolderPicker =true ;
+			dlg.InitialDirectory =System.AppDomain.CurrentDomain.BaseDirectory ;
+			dlg.AddToMostRecentlyUsedList =false ;
+			dlg.AllowNonFileSystemItems =false ;
+			dlg.DefaultDirectory =System.AppDomain.CurrentDomain.BaseDirectory ;
+			dlg.EnsureFileExists =true ;
+			dlg.EnsurePathExists =true ;
+			dlg.EnsureReadOnly =false ;
+			dlg.EnsureValidNames =true ;
+			dlg.Multiselect =false ;
+			dlg.ShowPlacesList =true ;
+			if ( dlg.ShowDialog () == CommonFileDialogResult.Ok ) {
+				string folder =dlg.FileName ;
+				await Task.WhenAll (ForgeObjects.SelectedItems.Cast<ForgeObjectInfo> ().Select (item =>
+					DownloadExecute (item, folder))) ;
+			}
+		}
+
+		protected async Task<bool> DownloadExecute (ForgeObjectInfo item, string folder) {
+			DownloadProgress wnd =new DownloadProgress (item.Name) ;
+			wnd.Show () ;
+
+			try {
+				ObjectsApi ossObjects =new ObjectsApi () ;
+				ossObjects.Configuration.AccessToken =accessToken ;
+				ApiResponse<dynamic> response =await ossObjects.GetObjectAsyncWithHttpInfo (_bucket, item.Properties.objectKey) ;
+				httpErrorHandler (response, "Failed to download file") ;
+				Stream downloadObj =response.Data as Stream ;
+				downloadObj.Position =0 ;
+				string outputFilename =System.IO.Path.Combine (folder, item.Name) ;
+				using ( FileStream outputFile =new FileStream (outputFilename, FileMode.Create) )
+					downloadObj.CopyTo (outputFile) ;
+				wnd.ReportProgress (new ProgressInfo (100, "File download succeeded")) ;
+			} catch ( Exception ex ) {
+				wnd.ReportProgress (new ProgressInfo (0, ex.Message)) ;
+				return (false) ;
+			}
+			return (true) ;
+		}
+
+		private async void Item_DownloadNoUI (object sender, RoutedEventArgs e) {
+			Handled (e) ;
+			// http://stackoverflow.com/questions/4007882/select-folder-dialog-wpf/17712949#17712949
+			CommonOpenFileDialog dlg =new CommonOpenFileDialog () ;
+			dlg.Title ="Select Folder where to save your files";
+			dlg.IsFolderPicker =true ;
+			dlg.InitialDirectory =System.AppDomain.CurrentDomain.BaseDirectory ;
+			dlg.AddToMostRecentlyUsedList =false ;
+			dlg.AllowNonFileSystemItems =false ;
+			dlg.DefaultDirectory =System.AppDomain.CurrentDomain.BaseDirectory ;
+			dlg.EnsureFileExists =true ;
+			dlg.EnsurePathExists =true ;
+			dlg.EnsureReadOnly =false ;
+			dlg.EnsureValidNames =true ;
+			dlg.Multiselect =false ;
+			dlg.ShowPlacesList =true ;
+			if ( dlg.ShowDialog () == CommonFileDialogResult.Ok ) {
+				string folder =dlg.FileName ;
+				int i =0 ;
+				Task[] tasks =new Task [ForgeObjects.SelectedItems.Count] ;
+				foreach ( ForgeObjectInfo item in ForgeObjects.SelectedItems )
+					tasks [i++] =DownloadFileObjectNoUI (item, folder) ;
+				await Task.WhenAll (tasks) ;
+			}
+		}
+
+		private async Task<bool> DownloadFileObjectNoUI (ForgeObjectInfo item, string folder) {
+			try {
+				ObjectsApi ossObjects =new ObjectsApi () ;
+				ossObjects.Configuration.AccessToken =accessToken ;
+				ApiResponse<dynamic> response =await ossObjects.GetObjectAsyncWithHttpInfo (_bucket, item.Properties.objectKey) ;
+				httpErrorHandler (response, "Failed to download file") ;
+				Stream downloadObj =response.Data as Stream ;
+				downloadObj.Position =0 ;
+				string outputFilename =System.IO.Path.Combine (folder, item.Name) ;
+				using ( FileStream outputFile =new FileStream (outputFilename, FileMode.Create) )
+					downloadObj.CopyTo (outputFile) ;
+			} catch ( Exception ex ) {
+				Debug.WriteLine (ex.Message) ;
+				return (false) ;
+			}
+			return (true) ;
 		}
 
 		private async void Item_DeleteObject (object sender, RoutedEventArgs e) {
@@ -446,7 +566,8 @@ namespace Autodesk.Forge.WpfCsharp {
 				ApiResponse<dynamic> response =await ossObjects.DeleteObjectAsyncWithHttpInfo (_bucket, item.Name) ;
 				httpErrorHandler (response, "Failed to delete file") ;
 				items.Remove (item) ;
-			} catch ( Exception /*ex*/ ) {
+			} catch ( Exception ex ) {
+				Debug.WriteLine (ex.Message) ;
 				return (false) ;
 			}
 			return (true) ;
@@ -460,6 +581,28 @@ namespace Autodesk.Forge.WpfCsharp {
 			) ;
 		}
 
+		private void Launch_Viewer (object sender, RoutedEventArgs e) {
+			Handled (e) ;
+			if ( ForgeObjects.SelectedItems.Count != 1 ) {
+				MessageBox.Show ("We can launch only one viewer at a time for now!", APP_NAME, MessageBoxButton.OK, MessageBoxImage.Information) ;
+				return ;
+			}
+			ForgeObjectInfo item =ForgeObjects.SelectedItem as ForgeObjectInfo ;
+			string urn =URN (_bucket, item, true) ;
+			string url ="https://models.autodesk.io/view.html?urn=" + urn + "&accessToken=" + accessToken ;
+			System.Diagnostics.Process.Start (new System.Diagnostics.ProcessStartInfo (url)) ;
+		}
+
+		private void Launch_ViewerEmbedded (object sender, RoutedEventArgs e) {
+			Handled (e) ;
+			if ( ForgeObjects.SelectedItems.Count != 1 ) {
+				MessageBox.Show ("We can launch only one viewer at a time for now!", APP_NAME, MessageBoxButton.OK, MessageBoxImage.Information) ;
+				return ;
+			}
+			Viewer wnd =new Viewer (ForgeObjects.SelectedItem as ForgeObjectInfo, accessToken) ;
+			wnd.Show () ;
+		}
+
 		private async Task<bool> DeleteManifestOnServer (ForgeObjectInfo item) {
 			try {
 				DerivativesApi md =new DerivativesApi () ;
@@ -469,7 +612,9 @@ namespace Autodesk.Forge.WpfCsharp {
 				httpErrorHandler (response, "Failed to delete manifest") ;
 				item.Manifest =null ;
 				item.TranslationRequested =StateEnum.Idle ;
-			} catch ( Exception /*ex*/ ) {
+			} catch ( Exception ex ) {
+				item.TranslationRequested =StateEnum.Idle ;
+				Debug.WriteLine (ex.Message) ;
 				return (false) ;
 			}
 			return (true) ;
@@ -486,16 +631,17 @@ namespace Autodesk.Forge.WpfCsharp {
 			if ( ForgeObjects.SelectedItems.Count != 1 )
 				return ;
 			ForgeObjectInfo item =ForgeObjects.SelectedItem as ForgeObjectInfo ;
-			propertyGrid.SelectedObject =item.Properties ;
+			//propertyGrid.SelectedObject =item.Properties ;
+			propertyGrid.SelectedObject =new ItemProperties (item) ;
 		}
 
 		#endregion
 
 		#region Utils
-		public static bool httpErrorHandler (ApiResponse<dynamic> response, string msg ="") {
+		public static bool httpErrorHandler (ApiResponse<dynamic> response, string msg ="", bool bThrowException =true) {
 			if ( response.StatusCode < 200 || response.StatusCode >= 300 ) {
-		//		Console.Error.WriteLine (msg) ;
-		//		Console.Error.WriteLine ("HTTP " + response.StatusCode) ;
+				if ( bThrowException )
+					throw new Exception (msg + " (HTTP " + response.StatusCode + ")") ;
 				return (true) ;
 			}
 			return (false) ;
@@ -505,7 +651,7 @@ namespace Autodesk.Forge.WpfCsharp {
 			try {
 				var test =obj [name] ;
 				return (true) ;
-			} catch ( Exception ) {
+			} catch ( Exception /*ex*/ ) {
 				return (false) ;
 			}
 		}
@@ -516,7 +662,7 @@ namespace Autodesk.Forge.WpfCsharp {
 				if ( item.Properties != null )
 					urn =item.Properties.objectId ;
 				urn =bSafe ? SafeBase64Encode (urn) : Base64Encode (urn) ;
-			} catch ( Exception ) {
+			} catch ( Exception /*ex*/ ) {
 			}
 			return (urn) ;
 		}
@@ -565,6 +711,9 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		#endregion
 
+		private void mainWnd_Closed (object sender, EventArgs e) {
+
+		}
 	}
 
 }

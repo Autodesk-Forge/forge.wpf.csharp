@@ -56,6 +56,14 @@
     <Reference Include="MayaTheme">
       <HintPath>..\dependencies\MayaTheme.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\WindowsAPICodePack-Core.1.1.2\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\WindowsAPICodePack-Shell.1.1.1\lib\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
       <Private>True</Private>
@@ -107,6 +115,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="UI Components\DownloadProgress.xaml.cs">
+      <DependentUpon>DownloadProgress.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI Components\JobProgress.xaml.cs">
       <DependentUpon>JobProgress.xaml</DependentUpon>
     </Compile>
@@ -121,9 +132,17 @@
     <Compile Include="UI Components\UploadProgress.xaml.cs">
       <DependentUpon>UploadProgress.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI Components\Viewer.xaml.cs">
+      <DependentUpon>Viewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\ItemProperties.cs" />
     <Compile Include="Utils\MultipleBusy.cs" />
     <Compile Include="Utils\PropertyChangedHelper.cs" />
     <Compile Include="Utils\WaitCursor.cs" />
+    <Page Include="UI Components\DownloadProgress.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI Components\JobProgress.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -158,6 +177,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI Components\UploadProgress.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI Components\Viewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -36,15 +36,15 @@ using RestSharp;
 
 namespace Autodesk.Forge.WpfCsharp {
 
-	public partial class UploadProgress : Window {
+	public partial class DownloadProgress : Window {
 		protected string _key ;
 		private IProgress<ProgressInfo> _progressIndicator ;
 
-		protected UploadProgress () {
+		protected DownloadProgress () {
 			InitializeComponent () ;
 		}
 
-		public UploadProgress (string key) {
+		public DownloadProgress (string key) {
 			_key =key ;
 			InitializeComponent () ;
 		}
@@ -61,7 +61,7 @@ namespace Autodesk.Forge.WpfCsharp {
 		#region Window events
 		private void Window_Loaded (object sender, RoutedEventArgs e) {
 			label.Content =_key ;
-			ReportProgress (new ProgressInfo (1, "Uploading file to the server...")) ;
+			ReportProgress (new ProgressInfo (1, "Downloading file from the server...")) ;
 			_progressIndicator =new Progress<ProgressInfo> (ReportProgress) ;
 		}
 
