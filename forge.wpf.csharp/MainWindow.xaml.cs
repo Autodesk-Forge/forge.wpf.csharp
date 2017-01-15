@@ -1,18 +1,35 @@
-﻿using System;
+﻿//
+// Copyright (c) 2017 Autodesk, Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+// by Cyrille Fauvel
+// Autodesk Forge Partner Development
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -22,6 +39,7 @@ using System.Diagnostics;
 using Xceed.Wpf.Toolkit.PropertyGrid;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
+// For Folder Browser
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 using Autodesk.Forge;
@@ -72,9 +90,6 @@ namespace Autodesk.Forge.WpfCsharp {
 
 	}
 
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
 	public partial class MainWindow : Window, INotifyPropertyChanged {
 		private const string APP_NAME ="ForgeWpf" ;
 		private const string DEFAULT_IMAGE =@"Images\ForgeImg.png" ;
@@ -189,6 +204,9 @@ namespace Autodesk.Forge.WpfCsharp {
 			LoginMenu_Click (null, null) ;
 		}
 
+		// http://stackoverflow.com/questions/9992119/wpf-app-doesnt-shut-down-when-closing-main-window
+		// Required to close when using a WebBrowser control
+		// See also the App.xaml - ShutdownMode="OnExplicitShutdown"
 		private void Window_Closed (object sender, EventArgs e) {
 			//Handled (e) ;
 			Application.Current.Shutdown () ;
