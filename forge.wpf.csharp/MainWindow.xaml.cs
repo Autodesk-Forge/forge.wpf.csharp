@@ -113,15 +113,46 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		private bool readKeys () {
 			FORGE_CLIENT_ID =Environment.GetEnvironmentVariable ("FORGE_CLIENT_ID") ;
+			if ( string.IsNullOrEmpty (FORGE_CLIENT_ID) )
+				FORGE_CLIENT_ID =Properties.Settings.Default.FORGE_CLIENT_ID ;
 			FORGE_CLIENT_SECRET =Environment.GetEnvironmentVariable ("FORGE_CLIENT_SECRET") ;
+			if ( string.IsNullOrEmpty (FORGE_CLIENT_SECRET) )
+				FORGE_CLIENT_SECRET =Properties.Settings.Default.FORGE_CLIENT_SECRET ;
 			PORT =Environment.GetEnvironmentVariable ("PORT") ;
-			if ( PORT == null )
+			if ( string.IsNullOrEmpty (PORT) )
+				PORT =Properties.Settings.Default.PORT ;
+			if ( string.IsNullOrEmpty (PORT) )
 				PORT ="3006" ;
-			if ( FORGE_CALLBACK == null ) {
+			if ( string.IsNullOrEmpty (FORGE_CALLBACK) ) {
 				FORGE_CALLBACK =Environment.GetEnvironmentVariable ("FORGE_CALLBACK") ;
-				if ( FORGE_CALLBACK == null )
+				if ( string.IsNullOrEmpty (FORGE_CALLBACK) )
+					FORGE_CALLBACK =Properties.Settings.Default.FORGE_CALLBACK ;
+				if ( string.IsNullOrEmpty (FORGE_CALLBACK) )
 					FORGE_CALLBACK ="http://localhost:" + PORT + "/oauth" ;
 			}
+			_bucket =(BUCKET + FORGE_CLIENT_ID).ToLower () ;
+			return (true) ;
+		}
+
+		private bool readKeys (string clientId, string clientSecret, string port, string callback, bool bSaveInSettings =false) {
+			FORGE_CLIENT_ID =clientId ;
+			if ( bSaveInSettings )
+				Properties.Settings.Default.FORGE_CLIENT_ID =FORGE_CLIENT_ID ;
+			FORGE_CLIENT_SECRET =clientSecret ;
+			if ( bSaveInSettings )
+				Properties.Settings.Default.FORGE_CLIENT_SECRET =FORGE_CLIENT_SECRET ;
+			PORT =port ;
+			if ( string.IsNullOrEmpty (PORT) )
+				PORT ="3006" ;
+			if ( bSaveInSettings )
+				Properties.Settings.Default.PORT =PORT ;
+			if ( string.IsNullOrEmpty (FORGE_CALLBACK) ) {
+				FORGE_CALLBACK =callback ;
+				if ( string.IsNullOrEmpty (FORGE_CALLBACK) )
+					FORGE_CALLBACK ="http://localhost:" + PORT + "/oauth" ;
+			}
+			if ( bSaveInSettings )
+				Properties.Settings.Default.FORGE_CALLBACK =FORGE_CALLBACK ;
 			_bucket =(BUCKET + FORGE_CLIENT_ID).ToLower () ;
 			return (true) ;
 		}
@@ -213,9 +244,39 @@ namespace Autodesk.Forge.WpfCsharp {
 		}
 
 		#region UI Commands
+		private void Configure_Click (object sender, RoutedEventArgs e) {
+			ConfigureKeys () ;
+		}
+
+		private bool ConfigureKeys () {
+			Credentials wnd =new Credentials () ;
+			wnd.Owner =this ;
+			wnd.CLIENT_ID.Text =FORGE_CLIENT_ID ;
+			wnd.CLIENT_SECRET.Password =FORGE_CLIENT_SECRET ;
+			wnd.PORT.Text =PORT ;
+			wnd.CALLBACK.Text =FORGE_CALLBACK ;
+			Nullable<bool> dialogResult =wnd.ShowDialog () ;
+			if ( dialogResult.Value == false )
+				return (false) ;
+			bool? nullableBool =wnd.SaveInSettings.IsChecked ;
+			readKeys (
+				wnd.CLIENT_ID.Text,
+				wnd.CLIENT_SECRET.Password,
+				wnd.PORT.Text,
+				wnd.CALLBACK.Text,
+				nullableBool == true
+			) ;
+			return (true) ;
+		}
+
 		private async void LoginMenu_Click (object sender, RoutedEventArgs e) {
 			Handled (e) ;
 			try {
+				if ( string.IsNullOrEmpty (FORGE_CLIENT_ID) || string.IsNullOrEmpty (FORGE_CLIENT_SECRET) ) {
+					if ( ConfigureKeys () )
+						return ;
+				}
+
 				State =StateEnum.Busy ;
 				ForgeMenu.IsEnabled =false ;
 				ForgeRegion.IsEnabled =false ;

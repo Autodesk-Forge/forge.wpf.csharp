@@ -22,5 +22,65 @@ namespace Autodesk.Forge.WpfCsharp.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FORGE_CLIENT_ID {
+            get {
+                return ((string)(this["FORGE_CLIENT_ID"]));
+            }
+            set {
+                this["FORGE_CLIENT_ID"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FORGE_CLIENT_SECRET {
+            get {
+                return ((string)(this["FORGE_CLIENT_SECRET"]));
+            }
+            set {
+                this["FORGE_CLIENT_SECRET"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string PORT {
+            get {
+                return ((string)(this["PORT"]));
+            }
+            set {
+                this["PORT"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FORGE_CALLBACK {
+            get {
+                return ((string)(this["FORGE_CALLBACK"]));
+            }
+            set {
+                this["FORGE_CALLBACK"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string _3LEGGED {
+            get {
+                return ((string)(this["_3LEGGED"]));
+            }
+            set {
+                this["_3LEGGED"] = value;
+            }
+        }
     }
 }

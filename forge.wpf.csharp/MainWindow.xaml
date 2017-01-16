@@ -118,7 +118,12 @@
 				</MenuItem>
 				<Separator />
 				<ComboBox x:Name="ForgeRegion" Width="80" Margin="-20,0,-35,0" ToolTip="Select which server you want to use" />
-
+				<Separator />
+				<MenuItem x:Name="ForgeConfig" Header="" Click="Configure_Click" ToolTip="Enter your Forge keys." Width="28">
+					<MenuItem.Icon>
+						<Image x:Name="ForgeConfigIcon" Source="/Images/Config.png" />
+					</MenuItem.Icon>
+				</MenuItem>
 			</Menu>
 
 			<ListView x:Name="ForgeObjects" Grid.Column="1" Grid.Row="1"

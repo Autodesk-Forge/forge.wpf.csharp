@@ -115,6 +115,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="UI Components\Credentials.xaml.cs">
+      <DependentUpon>Credentials.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI Components\DownloadProgress.xaml.cs">
       <DependentUpon>DownloadProgress.xaml</DependentUpon>
     </Compile>
@@ -139,6 +142,10 @@
     <Compile Include="Utils\MultipleBusy.cs" />
     <Compile Include="Utils\PropertyChangedHelper.cs" />
     <Compile Include="Utils\WaitCursor.cs" />
+    <Page Include="UI Components\Credentials.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI Components\DownloadProgress.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -252,6 +259,9 @@
   <ItemGroup>
     <Resource Include="Images\Forge.png" />
     <Resource Include="Images\ForgeImg.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Config.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
