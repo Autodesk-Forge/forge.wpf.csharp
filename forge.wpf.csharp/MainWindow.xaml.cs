@@ -105,8 +105,10 @@ namespace Autodesk.Forge.WpfCsharp {
 		private string FORGE_CALLBACK =null ; // 'http://localhost:' + PORT + '/oauth' ;
 
 		private string _grantType ="client_credentials" ; // {String} Must be ``client_credentials``
-		private string _scope ="data:read data:write data:create data:search bucket:create bucket:read bucket:update bucket:delete" ;
-		// todo private string _scopeViewer ="data:read" ;
+		private Scope[] _scope =new Scope[] {
+			Scope.DataRead, Scope.DataWrite, Scope.DataCreate, Scope.DataSearch,
+			Scope.BucketCreate, Scope.BucketRead, Scope.BucketUpdate, Scope.BucketDelete } ;
+		// todo private Scope[] _scopeViewer =new Scope [] { Scope.DataRead } ;
 		private string _bucket ="" ;
 		private const string BUCKET ="wpfcsharp" ;// This is a default basename, you can edit that name
 		private const PostBucketsPayload.PolicyKeyEnum _bucketType =PostBucketsPayload.PolicyKeyEnum.Persistent ;
@@ -191,7 +193,7 @@ namespace Autodesk.Forge.WpfCsharp {
 				return (bearer) ;
 			} catch ( Exception ex ) {
 				_2legged_bearer =null ;
-				MessageBox.Show ("Exception when calling TwoLeggedApi.AuthenticateWithHttpInfo: " + ex.Message, APP_NAME, MessageBoxButton.OK, MessageBoxImage.Error) ;
+				MessageBox.Show ("Exception when calling TwoLeggedApi.AuthenticateAsyncWithHttpInfo : " + ex.Message, APP_NAME, MessageBoxButton.OK, MessageBoxImage.Error) ;
 				return (null) ;
 			}
 		}
@@ -714,6 +716,10 @@ namespace Autodesk.Forge.WpfCsharp {
 			propertyGrid.SelectedObject =new ItemProperties (item) ;
 		}
 
+		private void mainWnd_Closed (object sender, EventArgs e) {
+
+		}
+		
 		#endregion
 
 		#region Utils
@@ -790,9 +796,6 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		#endregion
 
-		private void mainWnd_Closed (object sender, EventArgs e) {
-
-		}
 	}
 
 }

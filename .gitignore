@@ -252,3 +252,5 @@ paket-files/
 *.sln.iml
 
 .DS_Store
+Thumbs.db
+
