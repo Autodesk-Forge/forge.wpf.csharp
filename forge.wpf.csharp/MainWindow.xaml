@@ -31,6 +31,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:l="clr-namespace:Autodesk.Forge.WpfCsharp"
+		xmlns:p="clr-namespace:Autodesk.Forge.WpfCsharp.Properties"
         mc:Ignorable="d"
         Title="Autodesk Forge Service Sample"
 		Style="{DynamicResource MayaStyle}"
@@ -117,7 +118,13 @@
 					</MenuItem.Icon>
 				</MenuItem>
 				<Separator />
-				<ComboBox x:Name="ForgeRegion" Width="80" Margin="-20,0,-35,0" ToolTip="Select which server you want to use" />
+				<ComboBox x:Name="ForgeRegion" Width="80" Margin="-20,0,-35,0" ToolTip="Select which server you want to use" SelectionChanged="ForgeRegion_SelectionChanged" />
+				<ComboBox x:Name="BucketsInRegion" Width="240" Margin="-20,0,-35,0" ToolTip="Select your buckets from that region" SelectionChanged="BucketsInRegion_SelectionChanged" />
+				<MenuItem x:Name="CreateBucket" Header="" Click="CreateBucket_Click" ToolTip="Create a new bucket" Width="28">
+					<MenuItem.Icon>
+						<Image x:Name="CreateBucketIcon" Source="/Images/CreateBucket.png" />
+					</MenuItem.Icon>
+				</MenuItem>
 				<Separator />
 				<MenuItem x:Name="ForgeConfig" Header="" Click="Configure_Click" ToolTip="Enter your Forge keys." Width="28">
 					<MenuItem.Icon>
@@ -199,7 +206,7 @@
 			<GridSplitter Grid.Column="2" Grid.Row="1" Width="5" Height="Auto" HorizontalAlignment="Stretch" />
 			<xctk:PropertyGrid x:Name="propertyGrid" Grid.Column="3" Grid.Row="1" Margin="0" AutoGenerateProperties="True" />
 
-			<Label x:Name="connectedLabel" Grid.Column="1" Grid.Row="2" Content="Not yet connected to ReCap Server" Height="24" HorizontalAlignment="Left" VerticalAlignment="Top" Width="339" Padding="0" Margin="0,6,0,0" />
+			<Label x:Name="connectedLabel" Grid.Column="1" Grid.Row="2" Content="Not yet connected to the Forge Server" Height="24" HorizontalAlignment="Left" VerticalAlignment="Top" Width="339" Padding="0" Margin="0,6,0,0" />
 			<Label x:Name="connectedTimeLabel" Grid.Column="1" Grid.Row="2" Content="-" Height="24" HorizontalAlignment="Left" VerticalAlignment="Top" Width="339" Padding="0" Margin="0,23,0,0" />
 			<TextBlock Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="2" Height="24" HorizontalAlignment="Left" Margin="374,3,0,0"  VerticalAlignment="Top" Width="269">
 				<Hyperlink x:Name="forgeServerLabel" NavigateUri="http://developer.autodesk.com/" RequestNavigate="requestNavigate">

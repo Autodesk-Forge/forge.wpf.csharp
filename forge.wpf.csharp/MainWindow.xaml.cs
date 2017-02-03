@@ -34,6 +34,7 @@ using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 // Extended WPF Toolkit™ Community Edition - http://wpftoolkit.codeplex.com/
 using Xceed.Wpf.Toolkit.PropertyGrid;
@@ -45,7 +46,6 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using Autodesk.Forge;
 using Autodesk.Forge.Model;
 using Autodesk.Forge.Client;
-using System.Runtime.CompilerServices;
 
 namespace Autodesk.Forge.WpfCsharp {
 
@@ -58,17 +58,14 @@ namespace Autodesk.Forge.WpfCsharp {
 		public string Name { get; set; }
 		public string Size { get; set; }
 		public string Image { get; set; }
-		public dynamic _Properties =null ; // public dynamic Properties { get; set; } =null ;
+		public dynamic _Properties =null ;
 		public dynamic Properties { get { return (_Properties) ; } set { SetField (ref _Properties, value) ; } } 
-		//public StateEnum PropertiesRequested { get; set; } =StateEnum.Idle ;
 		private StateEnum _PropertiesRequested =StateEnum.Idle ;
 		public StateEnum PropertiesRequested { get { return (_PropertiesRequested) ; } set { SetField (ref _PropertiesRequested, value) ; } } 
-		private dynamic _Manifest =null ; // public dynamic Manifest { get; set; } =null ;
+		private dynamic _Manifest =null ;
 		public dynamic Manifest { get { return (_Manifest) ; } set { SetField (ref _Manifest, value) ; } } 
-		//public StateEnum ManifestRequested { get; set; } =StateEnum.Idle ;
 		private StateEnum _ManifestRequested =StateEnum.Idle ;
 		public StateEnum ManifestRequested { get { return (_ManifestRequested) ; } set { SetField (ref _ManifestRequested, value) ; } } 
-		//public StateEnum TranslationRequested { get; set; } =StateEnum.Idle ;
 		private StateEnum _TranslationRequested =StateEnum.Idle ;
 		public StateEnum TranslationRequested { get { return (_TranslationRequested) ; } set { SetField (ref _TranslationRequested, value) ; } }
 
@@ -94,68 +91,92 @@ namespace Autodesk.Forge.WpfCsharp {
 		private const string APP_NAME ="ForgeWpf" ;
 		private const string DEFAULT_IMAGE =@"Images\ForgeImg.png" ;
 
-		#region Forge Initialization
+		#region Forge Properties / Initialization
 		public enum Region {
 			US,
 			EMEA
 		} ;
-		private string FORGE_CLIENT_ID ="" ; // 'your_client_id'
-		private string FORGE_CLIENT_SECRET ="" ; // 'your_client_secret'
-		private string PORT ="" ; // 3006
-		private string FORGE_CALLBACK =null ; // 'http://localhost:' + PORT + '/oauth' ;
 
-		private string _grantType ="client_credentials" ; // {String} Must be ``client_credentials``
-		private Scope[] _scope =new Scope[] {
+		private readonly Scope[] _scope =new Scope[] {
 			Scope.DataRead, Scope.DataWrite, Scope.DataCreate, Scope.DataSearch,
-			Scope.BucketCreate, Scope.BucketRead, Scope.BucketUpdate, Scope.BucketDelete } ;
-		// todo private Scope[] _scopeViewer =new Scope [] { Scope.DataRead } ;
-		private string _bucket ="" ;
-		private const string BUCKET ="wpfcsharp" ;// This is a default basename, you can edit that name
-		private const PostBucketsPayload.PolicyKeyEnum _bucketType =PostBucketsPayload.PolicyKeyEnum.Persistent ;
+			Scope.BucketCreate, Scope.BucketRead, Scope.BucketUpdate, Scope.BucketDelete
+		} ;
+		//private readonly Scope[] _scopeViewer =new Scope[] { Scope.DataRead } ;
+		
+		private string FORGE_CLIENT_ID {
+			get { return (Properties.Settings.Default.FORGE_CLIENT_ID) ; }
+			set { Properties.Settings.Default.FORGE_CLIENT_ID =value ; }
+		}
 
-		private bool readKeys () {
-			FORGE_CLIENT_ID =Environment.GetEnvironmentVariable ("FORGE_CLIENT_ID") ;
-			if ( string.IsNullOrEmpty (FORGE_CLIENT_ID) )
-				FORGE_CLIENT_ID =Properties.Settings.Default.FORGE_CLIENT_ID ;
-			FORGE_CLIENT_SECRET =Environment.GetEnvironmentVariable ("FORGE_CLIENT_SECRET") ;
-			if ( string.IsNullOrEmpty (FORGE_CLIENT_SECRET) )
-				FORGE_CLIENT_SECRET =Properties.Settings.Default.FORGE_CLIENT_SECRET ;
-			PORT =Environment.GetEnvironmentVariable ("PORT") ;
-			if ( string.IsNullOrEmpty (PORT) )
-				PORT =Properties.Settings.Default.PORT ;
-			if ( string.IsNullOrEmpty (PORT) )
-				PORT ="3006" ;
-			if ( string.IsNullOrEmpty (FORGE_CALLBACK) ) {
-				FORGE_CALLBACK =Environment.GetEnvironmentVariable ("FORGE_CALLBACK") ;
-				if ( string.IsNullOrEmpty (FORGE_CALLBACK) )
-					FORGE_CALLBACK =Properties.Settings.Default.FORGE_CALLBACK ;
-				if ( string.IsNullOrEmpty (FORGE_CALLBACK) )
-					FORGE_CALLBACK ="http://localhost:" + PORT + "/oauth" ;
-			}
-			_bucket =(BUCKET + FORGE_CLIENT_ID).ToLower () ;
+		private string FORGE_CLIENT_SECRET {
+			get { return (Properties.Settings.Default.FORGE_CLIENT_SECRET) ; }
+			set { Properties.Settings.Default.FORGE_CLIENT_SECRET =value ; }
+		}
+
+		private string PORT {
+			get { return (Properties.Settings.Default.PORT) ; }
+			set { Properties.Settings.Default.PORT =value ; }
+		}
+
+		private string FORGE_CALLBACK {
+			get { return (Properties.Settings.Default.FORGE_CALLBACK) ; }
+			set { Properties.Settings.Default.FORGE_CALLBACK =value ; }
+		}
+
+		private string SERIAL_NUMBER {
+			get { return (Properties.Settings.Default.SERIAL_NUMBER) ; }
+			set { Properties.Settings.Default.SERIAL_NUMBER =value ; }
+		}
+
+		private string TOKEN_URL {
+			get { return (Properties.Settings.Default.TOKEN_URL) ; }
+			set { Properties.Settings.Default.TOKEN_URL =value ; }
+		}
+
+		// http://stackoverflow.com/questions/154533/best-way-to-bind-wpf-properties-to-applicationsettings-in-c
+		private string _2LEGGED {
+			get { return (Properties.Settings.Default._2LEGGED) ; }
+			set { Properties.Settings.Default._2LEGGED =value ; }
+		}
+
+		private string _3LEGGED {
+			get { return (Properties.Settings.Default._3LEGGED) ; }
+			set { Properties.Settings.Default._3LEGGED =value ; }
+		}
+
+		private void readFromEnvOrSettings (string name, Action<string> setOutput) {
+			string st =Environment.GetEnvironmentVariable (name) ;
+			if ( !string.IsNullOrEmpty (st) )
+				setOutput (st) ;
+		}
+
+		private bool readConfigFromEnvOrSettings () {
+			readFromEnvOrSettings ("FORGE_CLIENT_ID", value => FORGE_CLIENT_ID =value) ;
+			readFromEnvOrSettings ("FORGE_CLIENT_SECRET", value => FORGE_CLIENT_SECRET =value) ;
+			readFromEnvOrSettings ("PORT", value => PORT =value) ;
+			readFromEnvOrSettings ("FORGE_CALLBACK", value => FORGE_CALLBACK =value) ;
 			return (true) ;
 		}
 
-		private bool readKeys (string clientId, string clientSecret, string port, string callback, bool bSaveInSettings =false) {
+		private bool putConfig (
+			string serial, string url, 
+			string clientId, string clientSecret, string port, string callback,
+			string _2legged, string _3legged,
+			bool bSaveInSettings =false
+		) {
+			SERIAL_NUMBER =serial ;
+			if ( !string.IsNullOrEmpty (url) )
+				TOKEN_URL =url ;
 			FORGE_CLIENT_ID =clientId ;
-			if ( bSaveInSettings )
-				Properties.Settings.Default.FORGE_CLIENT_ID =FORGE_CLIENT_ID ;
 			FORGE_CLIENT_SECRET =clientSecret ;
-			if ( bSaveInSettings )
-				Properties.Settings.Default.FORGE_CLIENT_SECRET =FORGE_CLIENT_SECRET ;
 			PORT =port ;
-			if ( string.IsNullOrEmpty (PORT) )
-				PORT ="3006" ;
+			FORGE_CALLBACK =callback ;
+			if ( !string.IsNullOrEmpty (_2legged) )
+				_2LEGGED =_2legged ;
+			if ( !string.IsNullOrEmpty (_3legged) )
+				_3LEGGED =_3legged ;
 			if ( bSaveInSettings )
-				Properties.Settings.Default.PORT =PORT ;
-			if ( string.IsNullOrEmpty (FORGE_CALLBACK) ) {
-				FORGE_CALLBACK =callback ;
-				if ( string.IsNullOrEmpty (FORGE_CALLBACK) )
-					FORGE_CALLBACK ="http://localhost:" + PORT + "/oauth" ;
-			}
-			if ( bSaveInSettings )
-				Properties.Settings.Default.FORGE_CALLBACK =FORGE_CALLBACK ;
-			_bucket =(BUCKET + FORGE_CLIENT_ID).ToLower () ;
+				Properties.Settings.Default.Save () ;
 			return (true) ;
 		}
 
@@ -180,28 +201,66 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		#endregion
 
-		#region access_token
-		private TwoLeggedApi _twoLeggedApi =new TwoLeggedApi () ;
-		private dynamic _2legged_bearer =null ;
-		protected string accessToken { get { return (_2legged_bearer != null ? _2legged_bearer.access_token : null) ; } }
+		#region Access Token
+		protected string accessToken { get { return (_2LEGGED) ; } }
+		protected string userToken { get { return (_3LEGGED) ; } }
 
 		private async Task<ApiResponse<dynamic>> oauthExecAsync () {
 			try {
-				ApiResponse<dynamic> bearer =await _twoLeggedApi.AuthenticateAsyncWithHttpInfo (FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, _grantType, _scope) ;
+				_2LEGGED ="" ;
+				TwoLeggedApi _twoLeggedApi =new TwoLeggedApi () ;
+				ApiResponse<dynamic> bearer =await _twoLeggedApi.AuthenticateAsyncWithHttpInfo (
+					FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, oAuthConstants.CLIENT_CREDENTIALS, _scope) ;
 				httpErrorHandler (bearer, "Failed to get your token") ;
-				_2legged_bearer =bearer.Data ;
+				_2LEGGED =bearer.Data.access_token ;
 				return (bearer) ;
 			} catch ( Exception ex ) {
-				_2legged_bearer =null ;
 				MessageBox.Show ("Exception when calling TwoLeggedApi.AuthenticateAsyncWithHttpInfo : " + ex.Message, APP_NAME, MessageBoxButton.OK, MessageBoxImage.Error) ;
 				return (null) ;
 			}
+		}
+		
+		private bool isApplicationConfigured () {
+			return (
+				   !string.IsNullOrEmpty (_2LEGGED)
+				|| (   !string.IsNullOrEmpty (FORGE_CLIENT_ID)
+					&& !string.IsNullOrEmpty (FORGE_CLIENT_SECRET)
+				   )
+			) ;
+		}
+
+		private async Task<bool> AutoLog () {
+			// We should prefer getting a new token
+
+			// Verify we got a client_id and a client_secret
+			if (   !string.IsNullOrEmpty (FORGE_CLIENT_ID)
+				&& !string.IsNullOrEmpty (FORGE_CLIENT_SECRET)
+			) {
+				/*dynamic bearer =*/await oauthExecAsync () ;
+				if ( !string.IsNullOrEmpty (_2LEGGED) )
+					return (true) ;
+			}
+
+			// Verify this token is still valid
+			if ( !string.IsNullOrEmpty (_2LEGGED) ) {
+				try {
+					DerivativesApi md =new DerivativesApi () ;
+					md.Configuration.AccessToken =accessToken ;
+					dynamic response =await md.GetFormatsAsync () ;
+					return (true) ;
+				} catch ( Exception ex ) {
+					_2LEGGED ="" ;
+				}
+			}
+
+			//MessageBox.Show ("No auto-log...", APP_NAME, MessageBoxButton.OK, MessageBoxImage.Information) ;
+			return (false) ;
 		}
 
 		#endregion
 
 		public MainWindow () {
-			readKeys () ;
+			readConfigFromEnvOrSettings () ;
 
 			InitializeComponent () ;
 			ForgeObjects.View =ForgeObjects.FindResource ("tileView") as ViewBase ;
@@ -225,16 +284,31 @@ namespace Autodesk.Forge.WpfCsharp {
 			}
 		}
 
-		private void Window_Loaded (object sender, RoutedEventArgs e) {
+		private async void Window_Loaded (object sender, RoutedEventArgs e) {
 			Handled (e) ;
 			bool isNetworkAvailable =System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable () ;
 			if ( !isNetworkAvailable ) {
-				//LogError ("Network Error: Check your network connection and try again...") ;
 				MessageBox.Show ("Network Error: Check your network connection and try again...", APP_NAME, MessageBoxButton.OK, MessageBoxImage.Error) ;
 				return ;
 			}
 
-			LoginMenu_Click (null, null) ;
+			try {
+				if ( !isApplicationConfigured () ) {
+					if ( !ConfigureKeys () )
+						return ;
+				}
+
+				State =StateEnum.Busy ;
+				ForgeMenu.IsEnabled =false ;
+
+				bool success =await AutoLog () ;
+				UpdateLoginUI (success) ;
+				if ( success )
+					RefreshBucketList (sender, e) ;
+			} finally {
+				ForgeMenu.IsEnabled =true ;
+				State =StateEnum.Idle ;
+			}
 		}
 
 		// http://stackoverflow.com/questions/9992119/wpf-app-doesnt-shut-down-when-closing-main-window
@@ -247,103 +321,192 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		#region UI Commands
 		private void Configure_Click (object sender, RoutedEventArgs e) {
+			Handled (e) ;
 			ConfigureKeys () ;
 		}
 
 		private bool ConfigureKeys () {
-			Credentials wnd =new Credentials () ;
+			Configuration wnd =new Configuration () ;
 			wnd.Owner =this ;
+			wnd.SERIAL_NUMBER.Text =SERIAL_NUMBER ;
+			wnd.TOKEN_URL.Password ="" ;
 			wnd.CLIENT_ID.Text =FORGE_CLIENT_ID ;
 			wnd.CLIENT_SECRET.Password =FORGE_CLIENT_SECRET ;
 			wnd.PORT.Text =PORT ;
 			wnd.CALLBACK.Text =FORGE_CALLBACK ;
+			wnd._2DLEGGED.Text ="" ;
+			wnd._3DLEGGED.Text ="" ;
+
 			Nullable<bool> dialogResult =wnd.ShowDialog () ;
 			if ( dialogResult.Value == false )
 				return (false) ;
 			bool? nullableBool =wnd.SaveInSettings.IsChecked ;
-			readKeys (
+			//wnd.tabControl.SelectedIndex
+			putConfig (
+				wnd.SERIAL_NUMBER.Text,
+				wnd.TOKEN_URL.Password,
 				wnd.CLIENT_ID.Text,
 				wnd.CLIENT_SECRET.Password,
 				wnd.PORT.Text,
 				wnd.CALLBACK.Text,
+				wnd._2DLEGGED.Text,
+				wnd._3DLEGGED.Text,
 				nullableBool == true
 			) ;
+
+			if ( !string.IsNullOrEmpty (_2LEGGED) ) {
+				UpdateLoginUI (true) ;
+				RefreshBucketList (null, null) ;
+			}
+
 			return (true) ;
+		}
+
+		private bool UpdateLoginUI (bool iamlogged =false, string expireAt =null) {
+			ForgeLoginIcon.Source =(!iamlogged ?
+				  new BitmapImage (new Uri (@"Images\Login.png", UriKind.Relative))
+				: new BitmapImage (new Uri (@"Images\Logout.png", UriKind.Relative))
+			) ;
+			ForgeLogin.ToolTip =(!iamlogged ?
+				  "Login from the Forge WEB Service."
+				: "Logout from the Forge WEB Service."
+			) ;
+			connectedLabel.Content =(!iamlogged ?
+				  "Not connected to the Forge server"
+				: "Connected to the Forge server"
+			) ;
+			connectedTimeLabel.Content ="" ;
+			if ( !string.IsNullOrEmpty (expireAt) ) {
+				connectedTimeLabel.Content = (!iamlogged ?
+					  ""
+					: "Your current token will exprire at: " + expireAt
+				) ;
+			}
+			if ( !iamlogged ) {
+				BucketsInRegion.Items.Clear () ;
+				ItemsSource =null ;
+			}
+			return (iamlogged) ;
 		}
 
 		private async void LoginMenu_Click (object sender, RoutedEventArgs e) {
 			Handled (e) ;
 			try {
-				if ( string.IsNullOrEmpty (FORGE_CLIENT_ID) || string.IsNullOrEmpty (FORGE_CLIENT_SECRET) ) {
-					if ( ConfigureKeys () )
-						return ;
-				}
+				bool has2LeggedToken =string.IsNullOrEmpty (_2LEGGED) ;
+				_2LEGGED ="" ;
+				UpdateLoginUI (false) ;
+
+				if ( !isApplicationConfigured () )
+					return ;
 
 				State =StateEnum.Busy ;
 				ForgeMenu.IsEnabled =false ;
-				ForgeRegion.IsEnabled =false ;
 				
-				if ( _2legged_bearer == null )
+				if ( !has2LeggedToken )
 					await oauthExecAsync () ;
-				else
-					_2legged_bearer =null ;
-				ForgeLoginIcon.Source =(_2legged_bearer == null ?
-					  new BitmapImage (new Uri (@"Images\Login.png", UriKind.Relative))
-					: new BitmapImage (new Uri (@"Images\Logout.png", UriKind.Relative))
-				) ;
-				ForgeLogin.ToolTip =(_2legged_bearer == null ?
-					  "Login from the Forge WEB Service."
-					: "Logout from the Forge WEB Service."
-				) ;
-				connectedLabel.Content =(_2legged_bearer == null ?
-					  "Not connected to the Forge server"
-					: "Connected to the Forge server"
-				) ;
-				connectedTimeLabel.Content ="" ;
-				DateTime dt =DateTime.Now ;
-				if ( _2legged_bearer == null ) {
-					ForgeRegion.IsEnabled =true ;
+				if ( !UpdateLoginUI (!string.IsNullOrEmpty (_2LEGGED)) )
 					return ;
-				}
-				dt =dt.AddSeconds ((double)_2legged_bearer.expires_in) ;
-				connectedTimeLabel.Content =(_2legged_bearer == null ?
-					  ""
-					: "Your current token will exprire at: " + dt.ToLocalTime ()
-				) ;
 
-				// Let's create the bucket even if it exists already, and next get its content
-				await ConfigureBucket () ;
-				BucketContentRefresh_Click (sender, e) ;
+				RefreshBucketList (sender, e) ;
 			} finally {
 				ForgeMenu.IsEnabled =true ;
 				State =StateEnum.Idle ;
 			}
 		}
 
-		private async Task ConfigureBucket () {
+		private async void CreateBucket_Click (object sender, RoutedEventArgs e) {
+			Handled (e) ;
+			CreateBucket wnd =new CreateBucket () ;
+			wnd.Owner =this ;
+			Nullable<bool> dialogResult =wnd.ShowDialog () ;
+			if ( dialogResult.Value == false )
+				return ;
+
 			try {
 				BucketsApi ossBuckets =new BucketsApi () ;
 				ossBuckets.Configuration.AccessToken =accessToken ;
-				PostBucketsPayload payload =new PostBucketsPayload (_bucket, null, _bucketType) ;
-				ApiResponse<dynamic> response =await ossBuckets.CreateBucketAsyncWithHttpInfo (payload, (string)ForgeRegion.SelectedItem) ;
+				PostBucketsPayload.PolicyKeyEnum bucketType =(PostBucketsPayload.PolicyKeyEnum)Enum.Parse (typeof (PostBucketsPayload.PolicyKeyEnum), wnd.BucketType.Text, true) ;
+				string region =wnd.BucketRegion.Text ;
+				PostBucketsPayload payload =new PostBucketsPayload (wnd.BucketName.Text, null, bucketType) ;
+				ApiResponse<dynamic> response =await ossBuckets.CreateBucketAsyncWithHttpInfo (payload, region) ;
 				httpErrorHandler (response, "Failed to create bucket") ;
+				if ( region == (string)ForgeRegion.SelectedItem ) {
+					BucketsInRegion.Items.Add (wnd.BucketName.Text) ;
+					BucketsInRegion.SelectedItem =wnd.BucketName.Text ;
+				} else {
+					MessageBox.Show ("Bucket successfully created!", APP_NAME, MessageBoxButton.OK, MessageBoxImage.Information) ;
+				}
 			} catch ( ApiException apiex ) {
 				if ( apiex.ErrorCode != 409 ) // Already exists - we're good
 					MessageBox.Show ("Exception when calling BucketsApi.CreateBucketAsyncWithHttpInfo: " + apiex.Message, APP_NAME, MessageBoxButton.OK, MessageBoxImage.Error) ;
+				else
+					MessageBox.Show ("This bucket already exist, choose another name!", APP_NAME, MessageBoxButton.OK, MessageBoxImage.Warning) ;
 			} catch ( Exception ex ) {
 				MessageBox.Show ("Exception when calling BucketsApi.CreateBucketAsyncWithHttpInfo: " + ex.Message, APP_NAME, MessageBoxButton.OK, MessageBoxImage.Error) ;
 			}
-			return ;
+		}
+
+		private void ForgeRegion_SelectionChanged (object sender, SelectionChangedEventArgs e) {
+			RefreshBucketList (sender, e) ;
+		}
+
+		private Dictionary<string, List<string>> _bucketsCache =new Dictionary<string, List<string>> () ;
+		private async void RefreshBucketList (object sender, RoutedEventArgs e) {
+			Handled (e) ;
+			string region =(string)ForgeRegion.SelectedItem ;
+			try {
+				State =StateEnum.Busy ;
+				string startAt =null ;
+				_bucketsCache [region] =new List<string> () ;
+				do {
+					startAt =await GetBuckets (region, startAt, 10) ;
+				} while ( !string.IsNullOrEmpty (startAt) ) ;
+			} finally {
+				State =StateEnum.Idle ;
+			}
+			if ( (string)ForgeRegion.SelectedItem == region ) {
+				BucketsInRegion.Items.Clear () ;
+				foreach ( string name in _bucketsCache [region] )
+					BucketsInRegion.Items.Add (name) ;
+				BucketsInRegion.SelectedIndex =0 ;
+			}
+		}
+
+		private async Task<string> GetBuckets (string region, string startAt =null, int limit =10) {
+			try {
+				BucketsApi ossBuckets =new BucketsApi () ;
+				ossBuckets.Configuration.AccessToken =accessToken ;
+				ApiResponse<dynamic> response =await ossBuckets.GetBucketsAsyncWithHttpInfo (
+					region, limit, startAt
+				) ;
+				httpErrorHandler (response, "Failed to access bucket list") ;
+				foreach ( KeyValuePair<string, dynamic> objInfo in new DynamicDictionaryItems (response.Data.items) ) {
+					_bucketsCache [region].Add (objInfo.Value.bucketKey) ;
+				}
+				if ( !hasOwnProperty (response.Data, "next") )
+					return (null) ;
+				var uri =new Uri (response.Data.next) ;
+				NameValueCollection url_parts =System.Web.HttpUtility.ParseQueryString (uri.Query) ;
+				return (url_parts ["startAt"]) ;
+			} catch ( Exception ex ) {
+				Debug.WriteLine (ex.Message) ;
+			}
+			return (null) ;
+		}
+
+		private void BucketsInRegion_SelectionChanged (object sender, SelectionChangedEventArgs e) {
+			BucketContentRefresh_Click (sender, e) ;
 		}
 
 		private async void BucketContentRefresh_Click (object sender, RoutedEventArgs e) {
 			Handled (e) ;
 			try {
 				State =StateEnum.Busy ;
+				string bucket =(string)BucketsInRegion.SelectedItem ;
 				ItemsSource =null ;
 				string startAt =null ;
 				do {
-					startAt =await GetBucketContent (startAt, 10) ;
+					startAt =await GetBucketContent (bucket, startAt, 10) ;
 				} while ( !string.IsNullOrEmpty (startAt) ) ;
 				ForgeObjects.Items.Refresh () ;
 			} finally {
@@ -351,14 +514,14 @@ namespace Autodesk.Forge.WpfCsharp {
 			}
 		}
 
-		private async Task<string> GetBucketContent (string startAt =null, int limit =10) {
+		private async Task<string> GetBucketContent (string bucket, string startAt =null, int limit =10) {
 			try {
 				ObjectsApi ossObjects =new ObjectsApi () ;
 				ossObjects.Configuration.AccessToken =accessToken ;
 				ApiResponse<dynamic> response =await ossObjects.GetObjectsAsyncWithHttpInfo (
-					_bucket, limit, null, startAt
+					bucket, limit, null, startAt
 				) ;
-				httpErrorHandler (response, "Failed to access buckets list") ;
+				httpErrorHandler (response, "Failed to access bucket content") ;
 				ObservableCollection<ForgeObjectInfo> items =ItemsSource ;
 				foreach ( KeyValuePair<string, dynamic> objInfo in new DynamicDictionaryItems (response.Data.items) ) {
 					objInfo.Value.region =(string)ForgeRegion.SelectedItem ;
@@ -408,7 +571,7 @@ namespace Autodesk.Forge.WpfCsharp {
 				ossObjects.Configuration.AccessToken =accessToken ;
 				using ( StreamReader streamReader =new StreamReader (filename) ) {
 					ApiResponse<dynamic> response =await ossObjects.UploadObjectAsyncWithHttpInfo (
-						_bucket,
+						(string)BucketsInRegion.SelectedItem,
 						fileKey, (int)streamReader.BaseStream.Length, streamReader.BaseStream,
 						"application/octet-stream"
 					) ;
@@ -455,7 +618,7 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		private async Task<bool> TranslateObject (ObservableCollection<ForgeObjectInfo> items, ForgeObjectInfo item) {
 			try {
-				string urn =URN (_bucket, item, false) ;
+				string urn =URN ((string)BucketsInRegion.SelectedItem, item, false) ;
 				JobPayloadInput jobInput =new JobPayloadInput (
 					urn,
 					System.IO.Path.GetExtension (item.Name).ToLower () == ".zip",
@@ -513,7 +676,7 @@ namespace Autodesk.Forge.WpfCsharp {
 				item.PropertiesRequested =StateEnum.Busy ;
 				ObjectsApi ossObjects =new ObjectsApi () ;
 				ossObjects.Configuration.AccessToken =accessToken ;
-				ApiResponse<dynamic> response =await ossObjects.GetObjectDetailsAsyncWithHttpInfo (_bucket, item.Name) ;
+				ApiResponse<dynamic> response =await ossObjects.GetObjectDetailsAsyncWithHttpInfo ((string)BucketsInRegion.SelectedItem, item.Name) ;
 				httpErrorHandler (response, "Failed to get object details") ;
 				response.Data.region =(string)ForgeRegion.SelectedItem ;
 				item.Properties =response.Data ;
@@ -529,7 +692,7 @@ namespace Autodesk.Forge.WpfCsharp {
 				item.ManifestRequested =StateEnum.Busy ;
 				DerivativesApi md =new DerivativesApi () ;
 				md.Configuration.AccessToken =accessToken ;
-				string urn =URN (_bucket, item) ;
+				string urn =URN ((string)BucketsInRegion.SelectedItem, item) ;
 				ApiResponse<dynamic> response =await md.GetManifestAsyncWithHttpInfo (urn) ;
 				httpErrorHandler (response, "Failed to get manifest") ;
 				item.Manifest =response.Data ;
@@ -570,7 +733,7 @@ namespace Autodesk.Forge.WpfCsharp {
 			try {
 				ObjectsApi ossObjects =new ObjectsApi () ;
 				ossObjects.Configuration.AccessToken =accessToken ;
-				ApiResponse<dynamic> response =await ossObjects.GetObjectAsyncWithHttpInfo (_bucket, item.Properties.objectKey) ;
+				ApiResponse<dynamic> response =await ossObjects.GetObjectAsyncWithHttpInfo ((string)BucketsInRegion.SelectedItem, item.Properties.objectKey) ;
 				httpErrorHandler (response, "Failed to download file") ;
 				Stream downloadObj =response.Data as Stream ;
 				downloadObj.Position =0 ;
@@ -615,7 +778,7 @@ namespace Autodesk.Forge.WpfCsharp {
 			try {
 				ObjectsApi ossObjects =new ObjectsApi () ;
 				ossObjects.Configuration.AccessToken =accessToken ;
-				ApiResponse<dynamic> response =await ossObjects.GetObjectAsyncWithHttpInfo (_bucket, item.Properties.objectKey) ;
+				ApiResponse<dynamic> response =await ossObjects.GetObjectAsyncWithHttpInfo ((string)BucketsInRegion.SelectedItem, item.Properties.objectKey) ;
 				httpErrorHandler (response, "Failed to download file") ;
 				Stream downloadObj =response.Data as Stream ;
 				downloadObj.Position =0 ;
@@ -644,7 +807,7 @@ namespace Autodesk.Forge.WpfCsharp {
 			try {
 				ObjectsApi ossObjects =new ObjectsApi () ;
 				ossObjects.Configuration.AccessToken =accessToken ;
-				ApiResponse<dynamic> response =await ossObjects.DeleteObjectAsyncWithHttpInfo (_bucket, item.Name) ;
+				ApiResponse<dynamic> response =await ossObjects.DeleteObjectAsyncWithHttpInfo ((string)BucketsInRegion.SelectedItem, item.Name) ;
 				httpErrorHandler (response, "Failed to delete file") ;
 				items.Remove (item) ;
 			} catch ( Exception ex ) {
@@ -669,7 +832,7 @@ namespace Autodesk.Forge.WpfCsharp {
 				return ;
 			}
 			ForgeObjectInfo item =ForgeObjects.SelectedItem as ForgeObjectInfo ;
-			string urn =URN (_bucket, item, true) ;
+			string urn =URN ((string)BucketsInRegion.SelectedItem, item, true) ;
 			string url ="https://models.autodesk.io/view.html?urn=" + urn + "&accessToken=" + accessToken ;
 			System.Diagnostics.Process.Start (new System.Diagnostics.ProcessStartInfo (url)) ;
 		}
@@ -688,7 +851,7 @@ namespace Autodesk.Forge.WpfCsharp {
 			try {
 				DerivativesApi md =new DerivativesApi () ;
 				md.Configuration.AccessToken =accessToken ;
-				string urn =URN (_bucket, item) ;
+				string urn =URN ((string)BucketsInRegion.SelectedItem, item) ;
 				ApiResponse<dynamic> response =await md.DeleteManifestAsyncWithHttpInfo (urn) ;
 				httpErrorHandler (response, "Failed to delete manifest") ;
 				item.Manifest =null ;
@@ -716,10 +879,6 @@ namespace Autodesk.Forge.WpfCsharp {
 			propertyGrid.SelectedObject =new ItemProperties (item) ;
 		}
 
-		private void mainWnd_Closed (object sender, EventArgs e) {
-
-		}
-		
 		#endregion
 
 		#region Utils

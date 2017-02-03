@@ -74,6 +74,42 @@ namespace Autodesk.Forge.WpfCsharp.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TOKEN_URL {
+            get {
+                return ((string)(this["TOKEN_URL"]));
+            }
+            set {
+                this["TOKEN_URL"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SERIAL_NUMBER {
+            get {
+                return ((string)(this["SERIAL_NUMBER"]));
+            }
+            set {
+                this["SERIAL_NUMBER"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string _2LEGGED {
+            get {
+                return ((string)(this["_2LEGGED"]));
+            }
+            set {
+                this["_2LEGGED"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string _3LEGGED {
             get {
                 return ((string)(this["_3LEGGED"]));

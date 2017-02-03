@@ -38,9 +38,9 @@ using System.Windows.Shapes;
 
 namespace Autodesk.Forge.WpfCsharp {
 
-	public partial class Credentials : Window {
+	public partial class Configuration : Window {
 
-		public Credentials () {
+		public Configuration () {
 			InitializeComponent () ;
 		}
 

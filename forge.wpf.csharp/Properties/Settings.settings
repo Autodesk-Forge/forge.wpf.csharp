@@ -14,6 +14,15 @@
     <Setting Name="FORGE_CALLBACK" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="TOKEN_URL" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SERIAL_NUMBER" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="_2LEGGED" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
     <Setting Name="_3LEGGED" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
