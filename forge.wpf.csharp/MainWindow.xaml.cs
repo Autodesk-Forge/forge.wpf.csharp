@@ -35,6 +35,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using RestSharp;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 // Extended WPF Toolkit™ Community Edition - http://wpftoolkit.codeplex.com/
 using Xceed.Wpf.Toolkit.PropertyGrid;
@@ -97,20 +100,15 @@ namespace Autodesk.Forge.WpfCsharp {
 			EMEA
 		} ;
 
-		private readonly Scope[] _scope =new Scope[] {
-			Scope.DataRead, Scope.DataWrite, Scope.DataCreate, Scope.DataSearch,
-			Scope.BucketCreate, Scope.BucketRead, Scope.BucketUpdate, Scope.BucketDelete
-		} ;
-		//private readonly Scope[] _scopeViewer =new Scope[] { Scope.DataRead } ;
-		
 		private string FORGE_CLIENT_ID {
 			get { return (Properties.Settings.Default.FORGE_CLIENT_ID) ; }
 			set { Properties.Settings.Default.FORGE_CLIENT_ID =value ; }
 		}
 
+		private Crypto _Crypto =new Crypto (WpfCsharp.Crypto.CryptoTypes.encTypeTripleDES) ;
 		private string FORGE_CLIENT_SECRET {
-			get { return (Properties.Settings.Default.FORGE_CLIENT_SECRET) ; }
-			set { Properties.Settings.Default.FORGE_CLIENT_SECRET =value ; }
+			get { return (_Crypto.Decrypt (Properties.Settings.Default.FORGE_CLIENT_SECRET)) ; }
+			set { Properties.Settings.Default.FORGE_CLIENT_SECRET =_Crypto.Encrypt (value) ; }
 		}
 
 		private string PORT {
@@ -129,19 +127,19 @@ namespace Autodesk.Forge.WpfCsharp {
 		}
 
 		private string TOKEN_URL {
-			get { return (Properties.Settings.Default.TOKEN_URL) ; }
-			set { Properties.Settings.Default.TOKEN_URL =value ; }
+			get { return (_Crypto.Decrypt (Properties.Settings.Default.TOKEN_URL)) ; }
+			set { Properties.Settings.Default.TOKEN_URL =_Crypto.Encrypt (value) ; }
 		}
 
 		// http://stackoverflow.com/questions/154533/best-way-to-bind-wpf-properties-to-applicationsettings-in-c
 		private string _2LEGGED {
-			get { return (Properties.Settings.Default._2LEGGED) ; }
-			set { Properties.Settings.Default._2LEGGED =value ; }
+			get { return (_Crypto.Decrypt (Properties.Settings.Default._2LEGGED)) ; }
+			set { Properties.Settings.Default._2LEGGED =_Crypto.Encrypt (value) ; }
 		}
 
 		private string _3LEGGED {
-			get { return (Properties.Settings.Default._3LEGGED) ; }
-			set { Properties.Settings.Default._3LEGGED =value ; }
+			get { return (_Crypto.Decrypt (Properties.Settings.Default._3LEGGED)) ; }
+			set { Properties.Settings.Default._3LEGGED =_Crypto.Encrypt (value) ; }
 		}
 
 		private void readFromEnvOrSettings (string name, Action<string> setOutput) {
@@ -201,16 +199,52 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		#endregion
 
-		#region Access Token
+		#region access_token
 		protected string accessToken { get { return (_2LEGGED) ; } }
 		protected string userToken { get { return (_3LEGGED) ; } }
 
+		private async Task oauthExecAsyncFromTokenServer () {
+			try {
+				RestClient client =new RestClient (TOKEN_URL.TrimEnd (new char [] { '/' })) ;
+				string url ="/" + SERIAL_NUMBER ;
+				RestRequest request =new RestRequest (url, Method.POST) ;
+				DateTime dt =DateTime.UtcNow ;
+				string obj ="{ \"serial\": \"" + SERIAL_NUMBER + "\", \"other\": \"" + dt.ToString ("o") + "\" }" ;
+				byte[] data =DigitalSignature.Encrypt (obj) ;
+				request.AddParameter ("application/octet-stream", Convert.ToBase64String (data), ParameterType.RequestBody) ;
+				//await client.ExecuteAsync (request, response => {
+				//	if ( response.StatusCode == System.Net.HttpStatusCode.OK ) {
+				//		// OK
+				//	} else {
+				//		// NOK
+				//	}
+				//}) ;
+				_2LEGGED ="" ;
+				var restResponse =await client.ExecuteTaskAsync (request) ;
+				if ( restResponse.StatusCode == System.Net.HttpStatusCode.OK ) {
+					string json =restResponse.Content ;
+					JObject bearer =JObject.Parse (json) ;
+					// Token server encrypted the token
+					_2LEGGED =_Crypto.Decrypt (bearer ["access_token"].ToString ()) ;
+				} else {
+					MessageBox.Show ("Could not get an access token from the server. Sorry!", APP_NAME, MessageBoxButton.OK, MessageBoxImage.Error) ;
+				}
+			} catch ( Exception ex ) {
+				MessageBox.Show ("Exception when requesting tokens: " + ex.Message, APP_NAME, MessageBoxButton.OK, MessageBoxImage.Error) ;
+			}
+		}
+
 		private async Task<ApiResponse<dynamic>> oauthExecAsync () {
+			Scope[] scope =new Scope[] {
+				Scope.DataRead, Scope.DataWrite, Scope.DataCreate, Scope.DataSearch,
+				Scope.BucketCreate, Scope.BucketRead, Scope.BucketUpdate, Scope.BucketDelete } ;
+			//Scope[] scopeViewer =new Scope[] { Scope.DataRead } ;
+
 			try {
 				_2LEGGED ="" ;
 				TwoLeggedApi _twoLeggedApi =new TwoLeggedApi () ;
 				ApiResponse<dynamic> bearer =await _twoLeggedApi.AuthenticateAsyncWithHttpInfo (
-					FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, oAuthConstants.CLIENT_CREDENTIALS, _scope) ;
+					FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, oAuthConstants.CLIENT_CREDENTIALS, scope) ;
 				httpErrorHandler (bearer, "Failed to get your token") ;
 				_2LEGGED =bearer.Data.access_token ;
 				return (bearer) ;
@@ -219,10 +253,11 @@ namespace Autodesk.Forge.WpfCsharp {
 				return (null) ;
 			}
 		}
-		
+
 		private bool isApplicationConfigured () {
 			return (
-				   !string.IsNullOrEmpty (_2LEGGED)
+				   !string.IsNullOrEmpty (TOKEN_URL)
+				|| !string.IsNullOrEmpty (_2LEGGED)
 				|| (   !string.IsNullOrEmpty (FORGE_CLIENT_ID)
 					&& !string.IsNullOrEmpty (FORGE_CLIENT_SECRET)
 				   )
@@ -231,9 +266,15 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		private async Task<bool> AutoLog () {
 			// We should prefer getting a new token
+			if ( !string.IsNullOrEmpty (TOKEN_URL) ) {
+				/*dynamic bearer =*/await oauthExecAsyncFromTokenServer () ;
+				if ( !string.IsNullOrEmpty (_2LEGGED) )
+					return (true) ;
+			}
 
 			// Verify we got a client_id and a client_secret
-			if (   !string.IsNullOrEmpty (FORGE_CLIENT_ID)
+			if (   string.IsNullOrEmpty (TOKEN_URL)
+				&& !string.IsNullOrEmpty (FORGE_CLIENT_ID)
 				&& !string.IsNullOrEmpty (FORGE_CLIENT_SECRET)
 			) {
 				/*dynamic bearer =*/await oauthExecAsync () ;
@@ -242,13 +283,14 @@ namespace Autodesk.Forge.WpfCsharp {
 			}
 
 			// Verify this token is still valid
-			if ( !string.IsNullOrEmpty (_2LEGGED) ) {
+			if (   string.IsNullOrEmpty (TOKEN_URL)
+				&& !string.IsNullOrEmpty (_2LEGGED) ) {
 				try {
 					DerivativesApi md =new DerivativesApi () ;
 					md.Configuration.AccessToken =accessToken ;
 					dynamic response =await md.GetFormatsAsync () ;
 					return (true) ;
-				} catch ( Exception ex ) {
+				} catch ( Exception /*ex*/ ) {
 					_2LEGGED ="" ;
 				}
 			}
@@ -392,7 +434,7 @@ namespace Autodesk.Forge.WpfCsharp {
 		private async void LoginMenu_Click (object sender, RoutedEventArgs e) {
 			Handled (e) ;
 			try {
-				bool has2LeggedToken =string.IsNullOrEmpty (_2LEGGED) ;
+				bool has2LeggedToken =!string.IsNullOrEmpty (_2LEGGED) ;
 				_2LEGGED ="" ;
 				UpdateLoginUI (false) ;
 
@@ -402,8 +444,16 @@ namespace Autodesk.Forge.WpfCsharp {
 				State =StateEnum.Busy ;
 				ForgeMenu.IsEnabled =false ;
 				
-				if ( !has2LeggedToken )
-					await oauthExecAsync () ;
+				if ( !has2LeggedToken ) {
+					if ( !string.IsNullOrEmpty (TOKEN_URL) )
+						/*dynamic bearer =*/await oauthExecAsyncFromTokenServer () ;
+					else if (
+						   string.IsNullOrEmpty (_2LEGGED)
+						&& !string.IsNullOrEmpty (FORGE_CLIENT_ID)
+						&& !string.IsNullOrEmpty (FORGE_CLIENT_SECRET)
+					)
+						/*dynamic bearer =*/await oauthExecAsync () ;
+				}
 				if ( !UpdateLoginUI (!string.IsNullOrEmpty (_2LEGGED)) )
 					return ;
 
@@ -954,6 +1004,12 @@ namespace Autodesk.Forge.WpfCsharp {
 		}
 
 		#endregion
+
+		// See DigitalSignature.cs #120
+		//internal static readonly byte[] _CRYPT_DEFAULT_PASSWORD1 ={ 62, 12, 25, 249, 16 } ;
+		internal static readonly byte[] _CRYPT_DEFAULT_PASSWORD2 ={ 61, 13, 12, 24 } ;
+		//internal static readonly byte[] _SaltByteArray1 ={ 8, 82, 86, 7, 78, 86, 7, 90, 75, 91, 40 } ;
+		internal static readonly byte[] _SaltByteArray2 ={ 90, 74, 57, 76, 89, 45, 82, 76, 86, 92 } ;
 
 	}
 

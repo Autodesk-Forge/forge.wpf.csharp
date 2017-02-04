@@ -1,0 +1,52 @@
+{
+  "name": "forge.tokenGenerator.nodejs",
+  "description": "A Node.js server to create Autodesk Forge Access Token for a Desktop App",
+  "homepage": "http://around-the-corner.typepad.com/",
+  "version": "4.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cyrillef/extract.autodesk.io.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cyrillef/extract.autodesk.io/issues"
+  },
+  "author": "Cyrille Fauvel",
+  "contributors": [
+    "Cyrille Fauvel <cyrille@autodesk.com>"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 6.3.1",
+    "npm": ">= 3.10.3"
+  },
+  "scripts": {
+    "start": "node start.js",
+    "debug": "node --debug-brk=5858 --nolazy start.js"
+  },
+  "keywords": [
+    "express",
+    "framework",
+    "forge",
+    "autodesk",
+    "web",
+    "rest",
+    "restful",
+    "router",
+    "app",
+    "api"
+  ],
+  "dependencies": {
+    "body-parser": "*",
+    "connect-multiparty": "*",
+    "crypto-js": "^3.1.9-1",
+    "express": "*",
+    "forge-apis": "*",
+    "install": "^0.8.4",
+    "moment": "^2.17.1",
+    "node-rsa": "^0.4.2",
+    "npm": "^4.1.2",
+    "request": "*"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {}
+}

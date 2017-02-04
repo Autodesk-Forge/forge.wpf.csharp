@@ -147,6 +147,8 @@
     <Compile Include="UI Components\Viewer.xaml.cs">
       <DependentUpon>Viewer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\DebugUtils.cs" />
+    <Compile Include="Utils\DigitalSignature.cs" />
     <Compile Include="Utils\ItemProperties.cs" />
     <Compile Include="Utils\MultipleBusy.cs" />
     <Compile Include="Utils\PropertyChangedHelper.cs" />
@@ -280,6 +282,13 @@
     <Resource Include="Images\CreateBucket.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>rem signtool sign /f "%25CERTIFICATE%25" /p %25PASSWORD%25 /v "$(TargetPath)"
+"c:\Program Files\ConfuserEx\Confuser.CLI.exe" -n "$(SolutionDir)\ConfuserEx.crproj"
+signtool sign /f "%25CERTIFICATE%25" /p %25PASSWORD%25 /v "$(TargetDir)Confused\$(TargetFileName)"
+signtool sign /f "%25CERTIFICATE%25" /p %25PASSWORD%25 /v "$(TargetPath)"
+</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

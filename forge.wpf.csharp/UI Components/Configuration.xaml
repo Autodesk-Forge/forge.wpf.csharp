@@ -40,12 +40,12 @@
 		<TabControl x:Name="tabControl" HorizontalAlignment="Left" Height="165" Margin="10,10,0,0" VerticalAlignment="Top" Width="445">
 			<TabItem Header="Main">
 				<Grid>
-					<Label Content="Your application information" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="421" />
+					<Label Content="Recommended: Choose this one to generate Access Token from a WEB service" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="421" />
 
 					<Label Content="Serial #" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="40,47,0,0" VerticalAlignment="Top" Width="45" />
 					<TextBox x:Name="SERIAL_NUMBER" HorizontalAlignment="Left" Height="23" Margin="106,43,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="320" />
-					<Label Content="URL" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="40,72,0,0" VerticalAlignment="Top" Width="45" Visibility="Hidden" />
-					<PasswordBox x:Name="TOKEN_URL" HorizontalAlignment="Left" Height="23" Margin="106,68,0,0" VerticalAlignment="Top" Width="320" Visibility="Hidden" />
+					<Label Content="URL" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="40,72,0,0" VerticalAlignment="Top" Width="45" />
+					<PasswordBox x:Name="TOKEN_URL" HorizontalAlignment="Left" Height="23" Margin="106,68,0,0" VerticalAlignment="Top" Width="320" />
 				</Grid>
 			</TabItem>
 			<TabItem Header="Access Tokens">
