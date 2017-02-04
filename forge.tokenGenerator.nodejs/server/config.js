@@ -30,8 +30,8 @@ var config ={
 	},
 
 	certificates: {
-		'private': path.normalize (__dirname + '/../../../private.cer'),
-		'public': path.normalize (__dirname + '/../../../public.cer')
+		'private': process.env.PRIVATE_CERTIFICATE || path.normalize (__dirname + '/../../../private.cer'),
+		'public': process.env.PUBLIC || path.normalize (__dirname + '/../../../public.cer')
 	}
 } ;
 

@@ -88,8 +88,8 @@ namespace Autodesk.Forge.WpfCsharp {
 			byte[] p1 =bytes.Where ((value, index) => index % 2 == 0).ToArray () ;
 			byte[] p2 =bytes.Where ((value, index) => index % 2 != 0).ToArray () ;
 			Debug.WriteLine ("->" + Crypto.GetPassword (bytes, 40, 2, false)) ;
-			Debug.WriteLine ("  1 -> " + string.Join (", ", p1)) ;
-			Debug.WriteLine ("  2 -> " + string.Join (", ", p2)) ;
+			Debug.WriteLine (" internal static readonly byte[] _CRYPT_DEFAULT_PASSWORD1 ={ " + string.Join (", ", p1) + " }") ;
+			Debug.WriteLine (" internal static readonly byte[] _CRYPT_DEFAULT_PASSWORD1 ={ " + string.Join (", ", p2) + " }") ;
 			byte[] test =p1.Zip (p2, (first, second) => new { F =first, S =second })
                   .SelectMany (fs => new byte[] { fs.F, fs.S } )
 				  .Concat (p1.Reverse ().TakeWhile ((v, i) => p1.Length % 2 == 1 && i == 0))
@@ -101,8 +101,8 @@ namespace Autodesk.Forge.WpfCsharp {
 			p1 =bytes.Where ((value, index) => index % 2 == 0).ToArray () ;
 			p2 =bytes.Where ((value, index) => index % 2 != 0).ToArray () ;
 			Debug.WriteLine ("->" + Crypto.GetPassword (bytes, 25, 5, true)) ;
-			Debug.WriteLine ("  1 -> " + string.Join (", ", p1)) ;
-			Debug.WriteLine ("  2 -> " + string.Join (", ", p2)) ;
+			Debug.WriteLine (" internal static readonly byte[] _SaltByteArray1 ={ " + string.Join (", ", p1) + " }") ;
+			Debug.WriteLine (" internal static readonly byte[] _SaltByteArray2 ={ " + string.Join (", ", p2) + " }") ;
 			test =p1.Zip (p2, (first, second) => new { F =first, S =second })
                   .SelectMany (fs => new byte[] { fs.F, fs.S } )
 				  .Concat (p1.Reverse ().TakeWhile ((v, i) => p1.Length % 2 == 1 && i == 0))
