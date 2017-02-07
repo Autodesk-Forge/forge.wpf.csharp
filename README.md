@@ -131,7 +131,9 @@ Setup instructions are a lot more complex because it requires a certicate and yo
 
   2. Download (fork, or clone) this project.
   3. Request your consumer key/secret keys from [https://developer.autodesk.com](https://developer.autodesk.com).
-  4. Open Visual Studio 2015 IDE
+  4. Open a Visual Studio 2015 Command console window and set 2 environment variables 'CERTIFICATE' and 'PASSWORD'
+     to point to your pfx certicate (this is used to sign your application). Then open the Visual Studio IDE,
+     typing ``` devenv ```
   5. Load the project 'forge.wpf.csharp' in Visual Studio 2015
   6. Open App.xam.cs
 
@@ -159,12 +161,18 @@ Setup instructions are a lot more complex because it requires a certicate and yo
      test decrypted: This is a test line
      ```
      
-  8. Stop the application, and copy the 'internal' output to their respective placeholder at
+  8. Stop the application, and copy the 'internal' output to their respective placeholder at:
   
-     a. App.xaml.cs #123
-     b. App.xaml.cs #125
-     c. MainWindow.xaml.cs #1010
-     d. MainWindow.xaml.cs #1012
+     a. forge.wpf.csharp/App.xaml.cs #123
+     b. forge.wpf.csharp/App.xaml.cs #125
+     c. forge.wpf.csharp/MainWindow.xaml.cs #1010
+     d. forge.wpf.csharp/MainWindow.xaml.cs #1012
+     e. forge.tokenGenerator.asp/GenerateToken/Utils/App.cs #34
+     f. forge.tokenGenerator.asp/GenerateToken/Utils/App.cs #36
+     g. forge.tokenGenerator.asp/GenerateToken/MainWindow.xaml.cs #35
+     h. forge.tokenGenerator.asp/GenerateToken/MainWindow.xaml.cs #37
+     i. forge.tokenGenerator.nodejs/server/encryption.js #29
+     j. forge.tokenGenerator.nodejs/server/encryption.js #30
    
   9. Build the solution, and run (ignore the dialog error for now)
   10. Using Node.js
