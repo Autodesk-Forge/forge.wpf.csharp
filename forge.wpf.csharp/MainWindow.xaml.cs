@@ -392,7 +392,7 @@ namespace Autodesk.Forge.WpfCsharp {
 		private async void LoginMenu_Click (object sender, RoutedEventArgs e) {
 			Handled (e) ;
 			try {
-				bool has2LeggedToken =string.IsNullOrEmpty (_2LEGGED) ;
+				bool has2LeggedToken =!string.IsNullOrEmpty (_2LEGGED) ;
 				_2LEGGED ="" ;
 				UpdateLoginUI (false) ;
 
