@@ -22,8 +22,6 @@ Demonstrates the Autodesk Forge API authorisation and translation process using 
 * using 2 legged oAuth
 * uses asynchronous methods
 
-### Thumbnail
-![thumbnail](forge.wpf.csharp/Images/thumbnail_default.png)
 
 ## Security considerations
 
@@ -100,6 +98,7 @@ A typical workflow is:
     Right-Click on the file item, and select either 'View in Browser' or 'View'
 
 
+
 ## License
 
 This sample is licensed under the terms of the [MIT License](http://opensource.org/licenses/MIT). 
@@ -112,3 +111,6 @@ Cyrille Fauvel <br />
 Forge Partner Development <br />
 http://developer.autodesk.com/ <br />
 http://around-the-corner.typepad.com <br />
+
+### Thumbnail
+![thumbnail](forge.wpf.csharp/Images/thumbnail_default.png)
