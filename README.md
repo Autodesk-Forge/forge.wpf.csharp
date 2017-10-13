@@ -23,7 +23,7 @@ Demonstrates the Autodesk Forge API authorisation and translation process using 
 * uses asynchronous methods
 
 ### Thumbnail
-![thumbnail](Images/thumbnail_default.png)
+![thumbnail](forge.wpf.csharp/Images/thumbnail_default.png)
 
 ## Security considerations
 
