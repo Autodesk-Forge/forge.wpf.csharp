@@ -4,8 +4,6 @@
 [![NuGet](https://img.shields.io/nuget/v/Nuget.Core.svg)](https://www.nuget.org/)
 ![Platforms](https://img.shields.io/badge/platform-windows%20%7C%20osx%20%7C%20linux-lightgray.svg)
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://opensource.org/licenses/MIT)
-
-*Forge API*:
 [![oAuth2](https://img.shields.io/badge/oAuth2-v1-green.svg)](http://developer-autodesk.github.io/)
 [![Data-Management](https://img.shields.io/badge/Data%20Management-v1-green.svg)](http://developer-autodesk.github.io/)
 [![OSS](https://img.shields.io/badge/OSS-v2-green.svg)](http://developer-autodesk.github.io/)
@@ -24,6 +22,8 @@ Demonstrates the Autodesk Forge API authorisation and translation process using 
 * using 2 legged oAuth
 * uses asynchronous methods
 
+### Thumbnail
+![thumbnail](Images/thumbnail_default.png)
 
 ## Security considerations
 
