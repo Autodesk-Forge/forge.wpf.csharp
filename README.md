@@ -99,6 +99,7 @@ A typical workflow is:
     # View the result.
     Right-Click on the file item, and select either 'View in Browser' or 'View'
 
+![thumbnail](/default.png)
 
 ## License
 
