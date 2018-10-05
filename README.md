@@ -1,5 +1,4 @@
 
-[![build status](https://api.travis-ci.org/cyrillef/models.autodesk.io.png)](https://travis-ci.org/cyrillef/models.autodesk.io)
 [![.Net](https://img.shields.io/badge/.Net-4.5-blue.svg)](https://msdn.microsoft.com/)
 [![NuGet](https://img.shields.io/nuget/v/Nuget.Core.svg)](https://www.nuget.org/)
 ![Platforms](https://img.shields.io/badge/platform-windows%20%7C%20osx%20%7C%20linux-lightgray.svg)
@@ -10,7 +9,7 @@
 [![Data-Management](https://img.shields.io/badge/Data%20Management-v1-green.svg)](http://developer-autodesk.github.io/)
 [![OSS](https://img.shields.io/badge/OSS-v2-green.svg)](http://developer-autodesk.github.io/)
 [![Model-Derivative](https://img.shields.io/badge/Model%20Derivative-v2-green.svg)](http://developer-autodesk.github.io/)
-[![Viewer](https://img.shields.io/badge/Forge%20Viewer-v2.17-green.svg)](http://developer-autodesk.github.io/)
+[![Viewer](https://img.shields.io/badge/Forge%20Viewer-v6.2-green.svg)](http://developer-autodesk.github.io/)
 
 # forge.wpf-csharp
 
@@ -27,7 +26,7 @@ Demonstrates the Autodesk Forge API authorisation and translation process using 
 
 ## Security considerations
 
-This version does not implement any security measures to protect your Forge keys, this is why the description 
+This version does not implement any security measures to protect your Forge keys, this is why the description
 below tells you to use environment variables vs hardcoding them in the code. Till it is possible to hardcode
 them in the code, someone can either:
 
@@ -46,8 +45,8 @@ is why on this version the Forge client secret key is never saved, otherwise it 
 well. This is for this reason, the setup instructions uses environment variables, but it is very clear that you
 should not use this approach when delivering the application to your customer(s).
 
-If you are interrested to learn few technics to help on protecting your application and your Forge keys, checkout 
-the 'secure-dev' branch. This 'secure-dev' branch is the one you need to consider to deliver your application to a 
+If you are interrested to learn few technics to help on protecting your application and your Forge keys, checkout
+the 'secure-dev' branch. This 'secure-dev' branch is the one you need to consider to deliver your application to a
 customer. The 'master' branch is present and 'unsecure' to keep the code simple and ease of read to learn the Forge
 API.
 
@@ -73,11 +72,11 @@ Visual Studio 2015, .Net Framework 4.5+
   1. Download (fork, or clone) this project.
   2. Request your consumer key/secret key from [https://developer.autodesk.com](https://developer.autodesk.com).
   3. Open an Visual Studio 2015 command prompt window
-  4. Set 2 environment variables FORGE_CLIENT_ID / FORGE_CLIENT_SECRET  with your Forge keys, or skip this 
+  4. Set 2 environment variables FORGE_CLIENT_ID / FORGE_CLIENT_SECRET  with your Forge keys, or skip this
      step and use the 'Configure' button from the menu after starting the application.
   5. Start Visual Studio 2015 IDE from the command line by typing 'devenv'
   6. Load the project in Visual Studio 2015, build the solution, and run
-  
+
 
 A typical workflow is:
 
@@ -103,7 +102,7 @@ A typical workflow is:
 
 ## License
 
-This sample is licensed under the terms of the [MIT License](http://opensource.org/licenses/MIT). 
+This sample is licensed under the terms of the [MIT License](http://opensource.org/licenses/MIT).
 Please see the [LICENSE](LICENSE) file for full details.
 
 

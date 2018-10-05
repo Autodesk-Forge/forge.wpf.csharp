@@ -63,9 +63,8 @@ namespace Autodesk.Forge.WpfCsharp {
 <html>
 <head>
 	<meta charset=""UTF-8"">
-	<script src=""https://developer.api.autodesk.com/modelderivative/v2/viewers/three.min.css?v=v2.17""></script>
-	<link rel=""stylesheet"" href=""https://developer.api.autodesk.com/modelderivative/v2/viewers/style.min.css?v=v2.17"" />
-	<script src=""https://developer.api.autodesk.com/modelderivative/v2/viewers/viewer3D.min.js?v=v2.17""></script>
+	<link rel=""stylesheet"" href=""https://developer.api.autodesk.com/modelderivative/v2/viewers/style.min.css?v=v6.2"" />
+	<script src=""https://developer.api.autodesk.com/modelderivative/v2/viewers/viewer3D.min.js?v=v6.2""></script>
 </head>
 <body onload=""initialize()"">
 <div id=""viewer"" style=""position:absolute; width:90%; height:90%;""></div>
