@@ -248,7 +248,7 @@ namespace Autodesk.Forge.WpfCsharp {
 					md.Configuration.AccessToken =accessToken ;
 					dynamic response =await md.GetFormatsAsync () ;
 					return (true) ;
-				} catch ( Exception ex ) {
+				} catch ( Exception ) {
 					_2LEGGED ="" ;
 				}
 			}
@@ -326,8 +326,9 @@ namespace Autodesk.Forge.WpfCsharp {
 		}
 
 		private bool ConfigureKeys () {
-			Configuration wnd =new Configuration () ;
-			wnd.Owner =this ;
+			Configuration wnd = new Configuration {
+				Owner = this
+			};
 			wnd.SERIAL_NUMBER.Text =SERIAL_NUMBER ;
 			wnd.TOKEN_URL.Password ="" ;
 			wnd.CLIENT_ID.Text =FORGE_CLIENT_ID ;
@@ -416,8 +417,9 @@ namespace Autodesk.Forge.WpfCsharp {
 
 		private async void CreateBucket_Click (object sender, RoutedEventArgs e) {
 			Handled (e) ;
-			CreateBucket wnd =new CreateBucket () ;
-			wnd.Owner =this ;
+			CreateBucket wnd = new CreateBucket {
+				Owner = this
+			};
 			Nullable<bool> dialogResult =wnd.ShowDialog () ;
 			if ( dialogResult.Value == false )
 				return ;
@@ -616,7 +618,9 @@ namespace Autodesk.Forge.WpfCsharp {
 			ForgeObjects.Items.Refresh () ;
 		}
 
+		#pragma warning disable IDE0060 // Remove unused parameter
 		private async Task<bool> TranslateObject (ObservableCollection<ForgeObjectInfo> items, ForgeObjectInfo item) {
+		#pragma warning restore IDE0060 // Remove unused parameter
 			try {
 				string urn =URN ((string)BucketsInRegion.SelectedItem, item, false) ;
 				JobPayloadInput jobInput =new JobPayloadInput (
@@ -648,9 +652,10 @@ namespace Autodesk.Forge.WpfCsharp {
 				item.TranslationRequested =StateEnum.Busy ;
 				item.Manifest =response.Data ;
 
-				JobProgress jobWnd =new JobProgress (item, accessToken) ;
-				jobWnd._callback =new JobCompletedDelegate (this.TranslationCompleted) ;
-				jobWnd.Owner =this ;
+				JobProgress jobWnd = new JobProgress (item, accessToken) {
+					_callback = new JobCompletedDelegate (this.TranslationCompleted),
+					Owner = this
+				};
 				jobWnd.Show () ;
 			} catch ( Exception /*ex*/ ) {
 				item.TranslationRequested =StateEnum.Idle ;
@@ -706,19 +711,20 @@ namespace Autodesk.Forge.WpfCsharp {
 		private async void Item_Download (object sender, RoutedEventArgs e) {
 			Handled (e) ;
 			// http://stackoverflow.com/questions/4007882/select-folder-dialog-wpf/17712949#17712949
-			CommonOpenFileDialog dlg =new CommonOpenFileDialog () ;
-			dlg.Title ="Select Folder where to save your files";
-			dlg.IsFolderPicker =true ;
-			dlg.InitialDirectory =System.AppDomain.CurrentDomain.BaseDirectory ;
-			dlg.AddToMostRecentlyUsedList =false ;
-			dlg.AllowNonFileSystemItems =false ;
-			dlg.DefaultDirectory =System.AppDomain.CurrentDomain.BaseDirectory ;
-			dlg.EnsureFileExists =true ;
-			dlg.EnsurePathExists =true ;
-			dlg.EnsureReadOnly =false ;
-			dlg.EnsureValidNames =true ;
-			dlg.Multiselect =false ;
-			dlg.ShowPlacesList =true ;
+			CommonOpenFileDialog dlg = new CommonOpenFileDialog {
+				Title = "Select Folder where to save your files",
+				IsFolderPicker = true,
+				InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory,
+				AddToMostRecentlyUsedList = false,
+				AllowNonFileSystemItems = false,
+				DefaultDirectory = System.AppDomain.CurrentDomain.BaseDirectory,
+				EnsureFileExists = true,
+				EnsurePathExists = true,
+				EnsureReadOnly = false,
+				EnsureValidNames = true,
+				Multiselect = false,
+				ShowPlacesList = true
+			};
 			if ( dlg.ShowDialog () == CommonFileDialogResult.Ok ) {
 				string folder =dlg.FileName ;
 				await Task.WhenAll (ForgeObjects.SelectedItems.Cast<ForgeObjectInfo> ().Select (item =>
@@ -751,19 +757,20 @@ namespace Autodesk.Forge.WpfCsharp {
 		private async void Item_DownloadNoUI (object sender, RoutedEventArgs e) {
 			Handled (e) ;
 			// http://stackoverflow.com/questions/4007882/select-folder-dialog-wpf/17712949#17712949
-			CommonOpenFileDialog dlg =new CommonOpenFileDialog () ;
-			dlg.Title ="Select Folder where to save your files";
-			dlg.IsFolderPicker =true ;
-			dlg.InitialDirectory =System.AppDomain.CurrentDomain.BaseDirectory ;
-			dlg.AddToMostRecentlyUsedList =false ;
-			dlg.AllowNonFileSystemItems =false ;
-			dlg.DefaultDirectory =System.AppDomain.CurrentDomain.BaseDirectory ;
-			dlg.EnsureFileExists =true ;
-			dlg.EnsurePathExists =true ;
-			dlg.EnsureReadOnly =false ;
-			dlg.EnsureValidNames =true ;
-			dlg.Multiselect =false ;
-			dlg.ShowPlacesList =true ;
+			CommonOpenFileDialog dlg = new CommonOpenFileDialog {
+				Title = "Select Folder where to save your files",
+				IsFolderPicker = true,
+				InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory,
+				AddToMostRecentlyUsedList = false,
+				AllowNonFileSystemItems = false,
+				DefaultDirectory = System.AppDomain.CurrentDomain.BaseDirectory,
+				EnsureFileExists = true,
+				EnsurePathExists = true,
+				EnsureReadOnly = false,
+				EnsureValidNames = true,
+				Multiselect = false,
+				ShowPlacesList = true
+			};
 			if ( dlg.ShowDialog () == CommonFileDialogResult.Ok ) {
 				string folder =dlg.FileName ;
 				int i =0 ;
@@ -833,7 +840,7 @@ namespace Autodesk.Forge.WpfCsharp {
 			}
 			ForgeObjectInfo item =ForgeObjects.SelectedItem as ForgeObjectInfo ;
 			string urn =URN ((string)BucketsInRegion.SelectedItem, item, true) ;
-			string url ="https://models.autodesk.io/view.html?urn=" + urn + "&accessToken=" + accessToken ;
+			string url ="https://models.autodesk.io/view.html?urn=" + urn + "&token=" + accessToken ;
 			System.Diagnostics.Process.Start (new System.Diagnostics.ProcessStartInfo (url)) ;
 		}
 
