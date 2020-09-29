@@ -30,16 +30,24 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Autodesk.Forge.WpfCsharp"
+		xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
+        xmlns:cef="clr-namespace:CefSharp;assembly=CefSharp.Core"
+		xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="Viewer"
 		Style="{DynamicResource MayaStyle}"
-		Width="960" Height="655"
+		Width="1008" Height="815"
 		Icon="../Images/Adsk.ico"
 		Loaded="Window_Loaded"
 >
-	
+
 	<Grid>
-		<WebBrowser x:Name="web" Width="Auto" Height="Auto" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+		<Border BorderBrush="Gray" BorderThickness="0,1"  Width="Auto" Height="Auto" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+			<wpf:ChromiumWebBrowser x:Name="web"
+                                    Width="Auto" Height="Auto" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+			</wpf:ChromiumWebBrowser>
+		</Border>
 	</Grid>
 	
+
 </Window>

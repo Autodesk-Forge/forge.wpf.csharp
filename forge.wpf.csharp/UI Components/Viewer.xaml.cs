@@ -22,6 +22,10 @@
 // by Cyrille Fauvel
 // Autodesk Forge Partner Development
 //
+using CefSharp;
+using CefSharp.Wpf;
+using System.Collections.Generic;
+using System.Text;
 using System.Windows;
 
 namespace Autodesk.Forge.WpfCsharp {
@@ -44,18 +48,19 @@ namespace Autodesk.Forge.WpfCsharp {
 		}
 
 		private void Viewer_Closing (object sender, System.ComponentModel.CancelEventArgs e) {
-			web.Source =null ;
-			web.NavigateToString ("<html><body></body></html>") ;
-			//web.Dispose () ;
+			//web.Source =null ;
+			//web.Load("https://forge.autodesk.com/");
+			web.Dispose () ;
 		}
 
 		private void Window_Loaded (object sender, RoutedEventArgs e) {
 			e.Handled =true ;
 			string urn =MainWindow.URN (_item.Properties.bucketKey, _item, true) ;
-			string st =_template.Replace ("__URN__", urn).Replace ("__ACCESS_TOKEN__", _accessToken) ;
-			web.NavigateToString (st) ;
-			//string url ="https://models.autodesk.io/view.html?urn=" + urn + "&accessToken=" + _accessToken ;
-			//web.Navigate (new Uri(url)) ;
+			
+			//string html = _template.Replace ("__URN__", urn).Replace ("__ACCESS_TOKEN__", _accessToken) ;
+
+			string url = "https://models.autodesk.io/view.html?urn=" + urn + "&token=" + _accessToken;
+			web.Load (url);
 		}
 
 		#region HTML template
